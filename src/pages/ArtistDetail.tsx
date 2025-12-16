@@ -72,6 +72,9 @@ const ArtistDetail = () => {
               src={artist.image || "/placeholder.svg"}
               alt=""
               className="w-full h-full object-cover opacity-30"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg";
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
             <div className="absolute inset-0 bg-gradient-to-l from-background via-background/50 to-transparent" />
@@ -93,6 +96,9 @@ const ArtistDetail = () => {
                   src={artist.image || "/placeholder.svg"}
                   alt={artist.name}
                   className="w-full aspect-[3/4] object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
                 />
               </div>
 
