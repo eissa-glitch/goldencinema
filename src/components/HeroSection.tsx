@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Play, Calendar, Star } from "lucide-react";
+import { Play, Calendar, Star, Sparkles } from "lucide-react";
 import { movies } from "@/data/mockData";
 
 const HeroSection = () => {
@@ -76,15 +76,40 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Featured Movie Card */}
+          {/* Featured Movie Card with Animations */}
           <div className="hidden lg:block animate-fade-in-up" style={{ animationDelay: "200ms" }}>
             <div className="relative">
-              <div className="cinema-card overflow-hidden glow-gold">
+              {/* Animated Glow Ring */}
+              <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-gold/20 via-gold/40 to-gold/20 blur-xl animate-pulse-glow opacity-60" />
+              
+              {/* Rotating Border */}
+              <div className="absolute -inset-1 rounded-xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-gold via-gold-light to-gold animate-rotate-slow origin-center" style={{ backgroundSize: "200% 200%" }} />
+              </div>
+              
+              {/* Main Card */}
+              <div className="cinema-card overflow-hidden animate-float relative bg-card">
                 <img
                   src={featuredMovie.poster}
                   alt={featuredMovie.title}
                   className="w-full aspect-[2/3] object-cover"
                 />
+                
+                {/* Shine Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gold/30 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-700" />
+                
+                {/* Sparkle Effects */}
+                <div className="absolute top-4 right-4">
+                  <Sparkles className="w-6 h-6 text-gold animate-sparkle" style={{ animationDelay: "0s" }} />
+                </div>
+                <div className="absolute top-8 left-6">
+                  <Sparkles className="w-4 h-4 text-gold-light animate-sparkle" style={{ animationDelay: "0.5s" }} />
+                </div>
+                <div className="absolute bottom-20 right-8">
+                  <Sparkles className="w-5 h-5 text-gold animate-sparkle" style={{ animationDelay: "1s" }} />
+                </div>
+                
+                {/* Movie Info Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/90 to-transparent">
                   <h3 className="text-2xl font-amiri font-bold text-foreground mb-2">
                     {featuredMovie.title}
@@ -93,9 +118,15 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              {/* Decorative Elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 border-2 border-gold/30 rounded-lg -z-10" />
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-gold/30 rounded-lg -z-10" />
+              {/* Decorative Elements with Animation */}
+              <div className="absolute -top-6 -right-6 w-32 h-32 border-2 border-gold/40 rounded-xl -z-10 animate-border-glow" />
+              <div className="absolute -bottom-6 -left-6 w-32 h-32 border-2 border-gold/40 rounded-xl -z-10 animate-border-glow" style={{ animationDelay: "1s" }} />
+              
+              {/* Floating Sparkles Around */}
+              <div className="absolute -top-2 left-1/2 w-2 h-2 bg-gold rounded-full animate-sparkle" style={{ animationDelay: "0.2s" }} />
+              <div className="absolute top-1/3 -left-3 w-3 h-3 bg-gold-light rounded-full animate-sparkle" style={{ animationDelay: "0.7s" }} />
+              <div className="absolute bottom-1/4 -right-2 w-2 h-2 bg-gold rounded-full animate-sparkle" style={{ animationDelay: "1.2s" }} />
+              <div className="absolute -bottom-3 right-1/3 w-2.5 h-2.5 bg-gold-dark rounded-full animate-sparkle" style={{ animationDelay: "0.4s" }} />
             </div>
           </div>
         </div>
