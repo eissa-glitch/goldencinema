@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      artist_articles: {
+        Row: {
+          artist_id: string
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          published_date: string | null
+          source: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          published_date?: string | null
+          source?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          published_date?: string | null
+          source?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_articles_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       artist_gallery: {
         Row: {
           artist_id: string
@@ -81,6 +125,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      movie_articles: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          movie_id: string
+          published_date: string | null
+          source: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          movie_id: string
+          published_date?: string | null
+          source?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          movie_id?: string
+          published_date?: string | null
+          source?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movie_articles_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       movie_artists: {
         Row: {

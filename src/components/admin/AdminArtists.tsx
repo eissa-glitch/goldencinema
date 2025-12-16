@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import GalleryManager from "./GalleryManager";
+import ArticlesManager from "./ArticlesManager";
+import ImageUploader from "./ImageUploader";
 
 interface ArtistFormData {
   name: string;
@@ -163,13 +165,19 @@ const AdminArtists = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image">رابط الصورة</Label>
+                <Label>صورة الفنان</Label>
+                <ImageUploader
+                  onUpload={(url) => setFormData({ ...formData, image: url })}
+                  currentImage={formData.image}
+                  folder="artists/photos"
+                />
+                <p className="text-xs text-muted-foreground">أو أدخل رابط مباشر:</p>
                 <Input
-                  id="image"
                   type="url"
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                   dir="ltr"
+                  placeholder="https://..."
                 />
               </div>
 
@@ -218,6 +226,12 @@ const AdminArtists = () => {
                         entityId={artist.id}
                         entityType="artist"
                         images={artist.gallery?.map(g => ({ id: g.id, image_url: g.image_url, caption: g.caption })) || []}
+                        entityName={artist.name}
+                      />
+                      <ArticlesManager
+                        entityId={artist.id}
+                        entityType="artist"
+                        articles={(artist as any).articles || []}
                         entityName={artist.name}
                       />
                       <Button size="sm" variant="outline" onClick={() => handleEdit(artist)}>

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Play, Calendar, Star, Sparkles } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
+import heroCinemaImage from "@/assets/hero-cinema.jpg";
 
 const HeroSection = () => {
   const { data: movies, isLoading } = useMovies();
@@ -9,7 +10,14 @@ const HeroSection = () => {
   if (isLoading || !featuredMovie) {
     return (
       <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-cinema" />
+        <div className="absolute inset-0">
+          <img
+            src={heroCinemaImage}
+            alt="السينما المصرية الكلاسيكية"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-background via-background/80 to-background/60" />
+        </div>
         <div className="container mx-auto px-4 relative z-10 pt-32 pb-20">
           <div className="animate-pulse">
             <div className="h-16 bg-gold/20 rounded w-3/4 mb-6" />
@@ -25,15 +33,12 @@ const HeroSection = () => {
       {/* Background */}
       <div className="absolute inset-0">
         <img
-          src={featuredMovie.poster || "/placeholder.svg"}
-          alt=""
-          className="w-full h-full object-cover opacity-30"
-          onError={(e) => {
-            e.currentTarget.src = "/placeholder.svg";
-          }}
+          src={heroCinemaImage}
+          alt="السينما المصرية الكلاسيكية"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-background via-background/90 to-background/70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
+        <div className="absolute inset-0 bg-gradient-to-l from-background via-background/80 to-background/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
       </div>
 
       {/* Film Strip Decoration */}

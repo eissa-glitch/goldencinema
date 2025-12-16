@@ -4,6 +4,7 @@ import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/type
 
 export type Artist = Tables<"artists"> & {
   gallery?: Tables<"artist_gallery">[];
+  articles?: Tables<"artist_articles">[];
   filmography?: string[];
 };
 
@@ -13,7 +14,7 @@ export const useArtists = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("artists")
-        .select("*, artist_gallery(*)")
+        .select("*, artist_gallery(*), artist_articles(*)")
         .order("name");
 
       if (error) throw error;
@@ -30,7 +31,7 @@ export const useArtist = (id: string | undefined) => {
       
       const { data, error } = await supabase
         .from("artists")
-        .select("*, artist_gallery(*)")
+        .select("*, artist_gallery(*), artist_articles(*)")
         .eq("id", id)
         .maybeSingle();
 

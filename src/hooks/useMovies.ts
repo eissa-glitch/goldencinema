@@ -4,6 +4,7 @@ import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/type
 
 export type Movie = Tables<"movies"> & {
   gallery?: Tables<"movie_gallery">[];
+  articles?: Tables<"movie_articles">[];
   cast?: string[];
 };
 
@@ -13,7 +14,7 @@ export const useMovies = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("movies")
-        .select("*, movie_gallery(*)")
+        .select("*, movie_gallery(*), movie_articles(*)")
         .order("year", { ascending: false });
 
       if (error) throw error;
@@ -30,7 +31,7 @@ export const useMovie = (id: string | undefined) => {
       
       const { data, error } = await supabase
         .from("movies")
-        .select("*, movie_gallery(*)")
+        .select("*, movie_gallery(*), movie_articles(*)")
         .eq("id", id)
         .maybeSingle();
 
