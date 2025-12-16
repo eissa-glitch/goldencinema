@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Artist } from "@/data/mockData";
+import { Artist } from "@/hooks/useArtists";
 
 interface ArtistCardProps {
   artist: Artist;
@@ -7,9 +7,11 @@ interface ArtistCardProps {
 }
 
 const ArtistCard = ({ artist, index = 0 }: ArtistCardProps) => {
-  const lifespan = artist.deathYear
-    ? `${artist.birthYear} - ${artist.deathYear}`
-    : `${artist.birthYear} - الآن`;
+  const lifespan = artist.death_year
+    ? `${artist.birth_year} - ${artist.death_year}`
+    : `${artist.birth_year || ""} - الآن`;
+
+  const primaryRole = artist.role?.[0] || "فنان";
 
   return (
     <Link
@@ -19,7 +21,7 @@ const ArtistCard = ({ artist, index = 0 }: ArtistCardProps) => {
     >
       <div className="relative aspect-square overflow-hidden">
         <img
-          src={artist.photo}
+          src={artist.image || "/placeholder.svg"}
           alt={artist.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
@@ -27,7 +29,7 @@ const ArtistCard = ({ artist, index = 0 }: ArtistCardProps) => {
         
         {/* Role Badge */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-gold/90 text-background px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap">
-          {artist.role}
+          {primaryRole}
         </div>
       </div>
 
