@@ -10,6 +10,7 @@ import Years from "./pages/Years";
 import MovieDetail from "./pages/MovieDetail";
 import ArtistDetail from "./pages/ArtistDetail";
 import NotFound from "./pages/NotFound";
+import VoiceAssistant from "./components/VoiceAssistant";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/artist/:id" element={<ArtistDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <VoiceAssistant />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
