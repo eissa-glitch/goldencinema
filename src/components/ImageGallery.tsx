@@ -45,6 +45,9 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
                 src={image}
                 alt={`${title} - صورة ${index + 1}`}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                onError={(e) => {
+                  e.currentTarget.src = "/placeholder.svg";
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -96,6 +99,9 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
               src={images[selectedImage]}
               alt={`${title} - صورة ${selectedImage + 1}`}
               className="max-w-full max-h-[80vh] object-contain rounded-lg animate-scale-in border-2 border-gold/50 shadow-[0_0_60px_hsl(var(--gold)/0.3)]"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg";
+              }}
             />
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full border border-gold/30">
               <span className="text-gold font-bold">{selectedImage + 1}</span>

@@ -24,6 +24,9 @@ const ArtistCard = ({ artist, index = 0 }: ArtistCardProps) => {
           src={artist.image || "/placeholder.svg"}
           alt={artist.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder.svg";
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
         

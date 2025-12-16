@@ -28,6 +28,9 @@ const HeroSection = () => {
           src={featuredMovie.poster || "/placeholder.svg"}
           alt=""
           className="w-full h-full object-cover opacity-30"
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder.svg";
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-l from-background via-background/90 to-background/70" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
@@ -110,6 +113,9 @@ const HeroSection = () => {
                   src={featuredMovie.poster || "/placeholder.svg"}
                   alt={featuredMovie.title}
                   className="w-full aspect-[2/3] object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
                 />
                 
                 {/* Shine Effect */}
