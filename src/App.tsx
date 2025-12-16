@@ -9,6 +9,8 @@ import Artists from "./pages/Artists";
 import Years from "./pages/Years";
 import MovieDetail from "./pages/MovieDetail";
 import ArtistDetail from "./pages/ArtistDetail";
+import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import VoiceAssistant from "./components/VoiceAssistant";
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/years" element={<Years />} />
           <Route path="/movie/:id" element={<MovieDetail />} />
           <Route path="/artist/:id" element={<ArtistDetail />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <VoiceAssistant />
