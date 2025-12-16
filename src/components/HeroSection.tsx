@@ -1,16 +1,31 @@
 import { Link } from "react-router-dom";
 import { Play, Calendar, Star, Sparkles } from "lucide-react";
-import { movies } from "@/data/mockData";
+import { useMovies } from "@/hooks/useMovies";
 
 const HeroSection = () => {
-  const featuredMovie = movies[0];
+  const { data: movies, isLoading } = useMovies();
+  const featuredMovie = movies?.[0];
+
+  if (isLoading || !featuredMovie) {
+    return (
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-cinema" />
+        <div className="container mx-auto px-4 relative z-10 pt-32 pb-20">
+          <div className="animate-pulse">
+            <div className="h-16 bg-gold/20 rounded w-3/4 mb-6" />
+            <div className="h-8 bg-muted rounded w-1/2 mb-8" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
         <img
-          src={featuredMovie.poster}
+          src={featuredMovie.poster || "/placeholder.svg"}
           alt=""
           className="w-full h-full object-cover opacity-30"
         />
@@ -33,10 +48,12 @@ const HeroSection = () => {
               <span className="bg-gold/20 text-gold px-4 py-1 rounded-full text-sm font-medium">
                 فيلم مميز
               </span>
-              <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 text-gold fill-gold" />
-                <span className="text-gold font-bold">{featuredMovie.rating}</span>
-              </div>
+              {featuredMovie.rating && (
+                <div className="flex items-center gap-1">
+                  <Star className="w-5 h-5 text-gold fill-gold" />
+                  <span className="text-gold font-bold">{featuredMovie.rating}</span>
+                </div>
+              )}
             </div>
 
             <h1 className="text-5xl md:text-7xl font-amiri font-bold text-gradient-gold mb-6 leading-tight">
@@ -90,7 +107,7 @@ const HeroSection = () => {
               {/* Main Card */}
               <div className="cinema-card overflow-hidden animate-float relative bg-card">
                 <img
-                  src={featuredMovie.poster}
+                  src={featuredMovie.poster || "/placeholder.svg"}
                   alt={featuredMovie.title}
                   className="w-full aspect-[2/3] object-cover"
                 />

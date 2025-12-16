@@ -1,10 +1,13 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MovieCard from "@/components/MovieCard";
-import { movies, years } from "@/data/mockData";
+import { useMovies, useYears } from "@/hooks/useMovies";
 import { Calendar } from "lucide-react";
 
 const Years = () => {
+  const { data: movies = [], isLoading } = useMovies();
+  const { data: years = [] } = useYears();
+
   const decades = [
     { label: "الخمسينيات", start: 1950, end: 1959 },
     { label: "الستينيات", start: 1960, end: 1969 },
@@ -12,7 +15,7 @@ const Years = () => {
     { label: "الثمانينيات", start: 1980, end: 1989 },
     { label: "التسعينيات", start: 1990, end: 1999 },
     { label: "الألفينيات", start: 2000, end: 2009 },
-    { label: "العشرينيات", start: 2010, end: 2019 },
+    { label: "العشرينيات", start: 2010, end: 2029 },
   ];
 
   const getMoviesByYear = (year: number) =>
@@ -20,6 +23,29 @@ const Years = () => {
 
   const getDecadeYears = (start: number, end: number) =>
     years.filter((y) => y >= start && y <= end);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-28 pb-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-amiri font-bold text-gradient-gold mb-4">
+                تصفح حسب السنوات
+              </h1>
+            </div>
+            <div className="animate-pulse space-y-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-48 bg-muted rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,6 +106,12 @@ const Years = () => {
               </section>
             );
           })}
+
+          {movies.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground text-lg">لا توجد أفلام حالياً</p>
+            </div>
+          )}
         </div>
       </main>
 

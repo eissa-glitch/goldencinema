@@ -3,12 +3,40 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MovieCard from "@/components/MovieCard";
 import ImageGallery from "@/components/ImageGallery";
-import { artists, movies } from "@/data/mockData";
+import ArtistCard from "@/components/ArtistCard";
+import { useArtist, useArtists, useArtistMovies } from "@/hooks/useArtists";
+import { Movie } from "@/hooks/useMovies";
 import { ArrowRight, Calendar, Film } from "lucide-react";
 
 const ArtistDetail = () => {
   const { id } = useParams();
-  const artist = artists.find((a) => a.id === id);
+  const { data: artist, isLoading } = useArtist(id);
+  const { data: allArtists = [] } = useArtists();
+  const { data: artistMoviesData = [] } = useArtistMovies(id);
+
+  const artistMovies = artistMoviesData as Movie[];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-32 pb-20 container mx-auto px-4">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-32 mb-8" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="aspect-[3/4] bg-muted rounded-xl" />
+              <div className="lg:col-span-2 space-y-4">
+                <div className="h-12 bg-muted rounded w-3/4" />
+                <div className="h-6 bg-muted rounded w-1/2" />
+                <div className="h-32 bg-muted rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!artist) {
     return (
@@ -25,10 +53,12 @@ const ArtistDetail = () => {
     );
   }
 
-  const artistMovies = movies.filter((m) => artist.filmography.includes(m.id));
-  const lifespan = artist.deathYear
-    ? `${artist.birthYear} - ${artist.deathYear}`
-    : `${artist.birthYear} - الآن`;
+  const lifespan = artist.death_year
+    ? `${artist.birth_year} - ${artist.death_year}`
+    : `${artist.birth_year || ""} - الآن`;
+
+  const galleryImages = artist.gallery?.map(g => g.image_url) || [];
+  const primaryRole = artist.role?.[0] || "فنان";
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,7 +69,7 @@ const ArtistDetail = () => {
         <section className="relative min-h-[60vh] flex items-end">
           <div className="absolute inset-0">
             <img
-              src={artist.photo}
+              src={artist.image || "/placeholder.svg"}
               alt=""
               className="w-full h-full object-cover opacity-30"
             />
@@ -60,7 +90,7 @@ const ArtistDetail = () => {
               {/* Photo */}
               <div className="cinema-card overflow-hidden glow-gold">
                 <img
-                  src={artist.photo}
+                  src={artist.image || "/placeholder.svg"}
                   alt={artist.name}
                   className="w-full aspect-[3/4] object-cover"
                 />
@@ -69,7 +99,7 @@ const ArtistDetail = () => {
               {/* Info */}
               <div className="lg:col-span-2">
                 <div className="bg-gold/90 text-background px-4 py-1 rounded-full text-sm font-bold inline-block mb-4">
-                  {artist.role}
+                  {primaryRole}
                 </div>
 
                 <h1 className="text-4xl md:text-6xl font-amiri font-bold text-gradient-gold mb-4">
@@ -87,16 +117,20 @@ const ArtistDetail = () => {
                   </div>
                 </div>
 
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  {artist.biography}
-                </p>
+                {artist.biography && (
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    {artist.biography}
+                  </p>
+                )}
               </div>
             </div>
           </div>
         </section>
 
         {/* Image Gallery */}
-        <ImageGallery images={artist.gallery} title={artist.name} />
+        {galleryImages.length > 0 && (
+          <ImageGallery images={galleryImages} title={artist.name} />
+        )}
 
         {/* Filmography */}
         {artistMovies.length > 0 && (
@@ -117,29 +151,11 @@ const ArtistDetail = () => {
           <div className="container mx-auto px-4">
             <h2 className="section-title">فنانون آخرون</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-              {artists
+              {allArtists
                 .filter((a) => a.id !== artist.id)
                 .slice(0, 6)
-                .map((a) => (
-                  <Link
-                    key={a.id}
-                    to={`/artist/${a.id}`}
-                    className="cinema-card group text-center block"
-                  >
-                    <div className="aspect-square overflow-hidden">
-                      <img
-                        src={a.photo}
-                        alt={a.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-amiri font-bold text-foreground group-hover:text-gold transition-colors">
-                        {a.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{a.role}</p>
-                    </div>
-                  </Link>
+                .map((a, idx) => (
+                  <ArtistCard key={a.id} artist={a} index={idx} />
                 ))}
             </div>
           </div>

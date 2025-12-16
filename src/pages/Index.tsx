@@ -4,11 +4,15 @@ import HeroSection from "@/components/HeroSection";
 import MovieCard from "@/components/MovieCard";
 import ArtistCard from "@/components/ArtistCard";
 import YearTimeline from "@/components/YearTimeline";
-import { movies, artists } from "@/data/mockData";
+import { useMovies } from "@/hooks/useMovies";
+import { useArtists } from "@/hooks/useArtists";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 const Index = () => {
+  const { data: movies = [], isLoading: moviesLoading } = useMovies();
+  const { data: artists = [], isLoading: artistsLoading } = useArtists();
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -30,11 +34,28 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-              {movies.map((movie, idx) => (
-                <MovieCard key={movie.id} movie={movie} index={idx} />
-              ))}
-            </div>
+            {moviesLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="cinema-card animate-pulse">
+                    <div className="aspect-[2/3] bg-muted" />
+                    <div className="p-4">
+                      <div className="h-5 bg-muted rounded w-3/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : movies.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {movies.slice(0, 6).map((movie, idx) => (
+                  <MovieCard key={movie.id} movie={movie} index={idx} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">لا توجد أفلام حالياً</p>
+              </div>
+            )}
           </div>
         </section>
 
@@ -55,11 +76,28 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-              {artists.map((artist, idx) => (
-                <ArtistCard key={artist.id} artist={artist} index={idx} />
-              ))}
-            </div>
+            {artistsLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="cinema-card animate-pulse">
+                    <div className="aspect-square bg-muted" />
+                    <div className="p-4">
+                      <div className="h-5 bg-muted rounded w-3/4 mx-auto" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : artists.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {artists.slice(0, 6).map((artist, idx) => (
+                  <ArtistCard key={artist.id} artist={artist} index={idx} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">لا يوجد فنانون حالياً</p>
+              </div>
+            )}
           </div>
         </section>
 

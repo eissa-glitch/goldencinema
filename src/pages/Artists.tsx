@@ -2,16 +2,17 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArtistCard from "@/components/ArtistCard";
-import { artists } from "@/data/mockData";
+import { useArtists, useRoles } from "@/hooks/useArtists";
 import { Users } from "lucide-react";
 
 const Artists = () => {
   const [selectedRole, setSelectedRole] = useState<string>("");
 
-  const roles = [...new Set(artists.map((a) => a.role))];
+  const { data: artists = [], isLoading } = useArtists();
+  const { data: roles = [] } = useRoles();
 
   const filteredArtists = artists.filter((artist) => {
-    if (selectedRole && artist.role !== selectedRole) return false;
+    if (selectedRole && !artist.role?.includes(selectedRole)) return false;
     return true;
   });
 
@@ -69,14 +70,27 @@ const Artists = () => {
           </div>
 
           {/* Artists Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-            {filteredArtists.map((artist, idx) => (
-              <ArtistCard key={artist.id} artist={artist} index={idx} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+                <div key={i} className="cinema-card animate-pulse">
+                  <div className="aspect-square bg-muted" />
+                  <div className="p-4">
+                    <div className="h-5 bg-muted rounded w-3/4 mx-auto" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {filteredArtists.map((artist, idx) => (
+                <ArtistCard key={artist.id} artist={artist} index={idx} />
+              ))}
+            </div>
+          )}
 
           {/* Empty State */}
-          {filteredArtists.length === 0 && (
+          {!isLoading && filteredArtists.length === 0 && (
             <div className="text-center py-20">
               <p className="text-muted-foreground text-lg">
                 لم يتم العثور على فنانين

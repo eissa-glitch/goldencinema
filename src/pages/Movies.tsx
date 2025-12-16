@@ -2,15 +2,19 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MovieCard from "@/components/MovieCard";
-import { movies, genres, years } from "@/data/mockData";
+import { useMovies, useGenres, useYears } from "@/hooks/useMovies";
 import { Filter } from "lucide-react";
 
 const Movies = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>("");
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
+  const { data: movies = [], isLoading } = useMovies();
+  const { data: genres = [] } = useGenres();
+  const { data: years = [] } = useYears();
+
   const filteredMovies = movies.filter((movie) => {
-    if (selectedGenre && !movie.genre.includes(selectedGenre)) return false;
+    if (selectedGenre && !movie.genre?.includes(selectedGenre)) return false;
     if (selectedYear && movie.year !== selectedYear) return false;
     return true;
   });
@@ -100,14 +104,27 @@ const Movies = () => {
           </p>
 
           {/* Movies Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {filteredMovies.map((movie, idx) => (
-              <MovieCard key={movie.id} movie={movie} index={idx} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                <div key={i} className="cinema-card animate-pulse">
+                  <div className="aspect-[2/3] bg-muted" />
+                  <div className="p-4">
+                    <div className="h-5 bg-muted rounded w-3/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {filteredMovies.map((movie, idx) => (
+                <MovieCard key={movie.id} movie={movie} index={idx} />
+              ))}
+            </div>
+          )}
 
           {/* Empty State */}
-          {filteredMovies.length === 0 && (
+          {!isLoading && filteredMovies.length === 0 && (
             <div className="text-center py-20">
               <p className="text-muted-foreground text-lg">
                 لم يتم العثور على أفلام تطابق معايير البحث
