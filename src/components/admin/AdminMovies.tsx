@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, Film } from "lucide-react";
 import { toast } from "sonner";
+import GalleryManager from "./GalleryManager";
 
 interface MovieFormData {
   title: string;
@@ -246,6 +247,12 @@ const AdminMovies = () => {
                   <TableCell>{movie.rating || "-"}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      <GalleryManager
+                        entityId={movie.id}
+                        entityType="movie"
+                        images={movie.gallery?.map(g => ({ id: g.id, image_url: g.image_url, caption: g.caption })) || []}
+                        entityName={movie.title}
+                      />
                       <Button size="sm" variant="outline" onClick={() => handleEdit(movie)}>
                         <Pencil className="h-4 w-4" />
                       </Button>

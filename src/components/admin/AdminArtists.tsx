@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
+import GalleryManager from "./GalleryManager";
 
 interface ArtistFormData {
   name: string;
@@ -213,6 +214,12 @@ const AdminArtists = () => {
                   <TableCell>{artist.role?.join(", ") || "-"}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      <GalleryManager
+                        entityId={artist.id}
+                        entityType="artist"
+                        images={artist.gallery?.map(g => ({ id: g.id, image_url: g.image_url, caption: g.caption })) || []}
+                        entityName={artist.name}
+                      />
                       <Button size="sm" variant="outline" onClick={() => handleEdit(artist)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
