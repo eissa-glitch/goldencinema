@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import MovieCard from "@/components/MovieCard";
 import ImageGallery from "@/components/ImageGallery";
 import ArtistCard from "@/components/ArtistCard";
+import ArticlesSection from "@/components/ArticlesSection";
 import { useArtist, useArtists, useArtistMovies } from "@/hooks/useArtists";
 import { Movie } from "@/hooks/useMovies";
 import { ArrowRight, Calendar, Film } from "lucide-react";
@@ -136,6 +137,14 @@ const ArtistDetail = () => {
         {/* Image Gallery */}
         {galleryImages.length > 0 && (
           <ImageGallery images={galleryImages} title={artist.name} />
+        )}
+
+        {/* Articles Section */}
+        {artist.articles && artist.articles.length > 0 && (
+          <ArticlesSection 
+            articles={artist.articles} 
+            title={`مقالات عن ${artist.name}`} 
+          />
         )}
 
         {/* Filmography */}

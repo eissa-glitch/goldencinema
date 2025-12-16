@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
 import MovieCard from "@/components/MovieCard";
+import ArticlesSection from "@/components/ArticlesSection";
 import { useMovie, useMovies } from "@/hooks/useMovies";
 import { Star, Clock, Calendar, User, Play, ArrowRight } from "lucide-react";
 
@@ -167,6 +168,14 @@ const MovieDetail = () => {
         {/* Image Gallery */}
         {galleryImages.length > 0 && (
           <ImageGallery images={galleryImages} title={movie.title} />
+        )}
+
+        {/* Articles Section */}
+        {movie.articles && movie.articles.length > 0 && (
+          <ArticlesSection 
+            articles={movie.articles} 
+            title={`مقالات عن ${movie.title}`} 
+          />
         )}
 
         {/* Related Movies */}
