@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, Film } from "lucide-react";
+import { Search, Menu, X, Film, Shield } from "lucide-react";
 import NewsTicker from "./NewsTicker";
 
 const Header = () => {
@@ -54,6 +54,15 @@ const Header = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-4">
+              {/* Admin Link */}
+              <Link
+                to="/admin"
+                className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-gold/20 transition-colors"
+                title="لوحة التحكم"
+              >
+                <Shield className="w-5 h-5 text-gold" />
+              </Link>
+
               {/* Search */}
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -109,6 +118,18 @@ const Header = () => {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                to="/admin"
+                onClick={() => setIsMenuOpen(false)}
+                className={`py-3 px-4 rounded-lg text-lg font-medium transition-colors flex items-center gap-2 ${
+                  isActive("/admin")
+                    ? "bg-gold/20 text-gold"
+                    : "text-foreground/80 hover:bg-gold/10 hover:text-gold"
+                }`}
+              >
+                <Shield className="w-5 h-5" />
+                لوحة التحكم
+              </Link>
             </nav>
           </div>
         )}
