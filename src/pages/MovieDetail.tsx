@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ImageGallery from "@/components/ImageGallery";
 import { movies, artists } from "@/data/mockData";
 import { Star, Clock, Calendar, User, Play, ArrowRight } from "lucide-react";
 
@@ -120,6 +121,9 @@ const MovieDetail = () => {
             </div>
           </div>
         </section>
+
+        {/* Image Gallery */}
+        <ImageGallery images={movie.gallery} title={movie.title} />
 
         {/* Related Movies */}
         {relatedMovies.length > 0 && (
