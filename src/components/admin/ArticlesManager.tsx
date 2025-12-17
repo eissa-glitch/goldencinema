@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, FileText, ExternalLink } from "lucide-react";
+import { Plus, Trash2, FileText, ExternalLink, Wand2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,6 +34,7 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
   const [newDate, setNewDate] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const queryClient = useQueryClient();
 
   const resetForm = () => {
@@ -42,6 +43,34 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
     setNewSource("");
     setNewDate("");
     setNewImageUrl("");
+  };
+
+  const handleExtractText = async () => {
+    if (!newImageUrl) {
+      toast.error("يرجى رفع صورة أولاً");
+      return;
+    }
+
+    setIsExtracting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-text-ocr", {
+        body: { imageUrl: newImageUrl },
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.text) {
+        setNewContent(data.text);
+        toast.success("تم استخراج النص بنجاح");
+      } else {
+        toast.error(data.error || "لم يتم العثور على نص في الصورة");
+      }
+    } catch (error) {
+      console.error("OCR error:", error);
+      toast.error("حدث خطأ أثناء استخراج النص");
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const handleAddArticle = async () => {
@@ -173,22 +202,44 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="articleContent">محتوى المقال</Label>
-            <Textarea
-              id="articleContent"
-              value={newContent}
-              onChange={(e) => setNewContent(e.target.value)}
-              placeholder="نص المقال..."
-              rows={4}
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label>صورة المقال</Label>
             <ImageUploader
               onUpload={(url) => setNewImageUrl(url)}
               currentImage={newImageUrl}
               folder={`articles/${entityType}s`}
+            />
+            {newImageUrl && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleExtractText}
+                disabled={isExtracting}
+                className="mt-2"
+              >
+                {isExtracting ? (
+                  <>
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    جاري استخراج النص...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="ml-2 h-4 w-4" />
+                    استخراج النص من الصورة (OCR)
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="articleContent">محتوى المقال</Label>
+            <Textarea
+              id="articleContent"
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+              placeholder="نص المقال... (يمكنك استخراج النص تلقائياً من صورة المقال)"
+              rows={6}
             />
           </div>
 
