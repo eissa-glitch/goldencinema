@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Image, X } from "lucide-react";
+import { Plus, Trash2, Image, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import ImageUploader from "./ImageUploader";
 
 interface GalleryImage {
   id: string;
@@ -28,9 +29,10 @@ const GalleryManager = ({ entityId, entityType, images, entityName }: GalleryMan
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
-  const handleAddImage = async () => {
-    if (!newImageUrl.trim()) {
-      toast.error("الرجاء إدخال رابط الصورة");
+  const handleAddImage = async (imageUrl?: string) => {
+    const urlToAdd = imageUrl || newImageUrl.trim();
+    if (!urlToAdd) {
+      toast.error("الرجاء إدخال رابط الصورة أو رفع صورة");
       return;
     }
 
@@ -42,7 +44,7 @@ const GalleryManager = ({ entityId, entityType, images, entityName }: GalleryMan
           .from("movie_gallery")
           .insert({
             movie_id: entityId,
-            image_url: newImageUrl.trim(),
+            image_url: urlToAdd,
             caption: newCaption.trim() || null,
           });
         error = result.error;
@@ -51,7 +53,7 @@ const GalleryManager = ({ entityId, entityType, images, entityName }: GalleryMan
           .from("artist_gallery")
           .insert({
             artist_id: entityId,
-            image_url: newImageUrl.trim(),
+            image_url: urlToAdd,
             caption: newCaption.trim() || null,
           });
         error = result.error;
@@ -99,6 +101,10 @@ const GalleryManager = ({ entityId, entityType, images, entityName }: GalleryMan
     }
   };
 
+  const handleImageUpload = (url: string) => {
+    handleAddImage(url);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -117,10 +123,31 @@ const GalleryManager = ({ entityId, entityType, images, entityName }: GalleryMan
 
         {/* Add New Image Form */}
         <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-          <h4 className="font-semibold">إضافة صورة جديدة</h4>
+          <h4 className="font-semibold flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            إضافة صورة جديدة
+          </h4>
+          
+          {/* Image Upload */}
+          <div className="space-y-2">
+            <Label>رفع صورة مباشرة</Label>
+            <ImageUploader
+              onUpload={handleImageUpload}
+              folder={`${entityType}s/gallery`}
+            />
+          </div>
+
+          <div className="relative flex items-center justify-center py-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <span className="relative bg-muted px-3 text-xs text-muted-foreground">أو</span>
+          </div>
+
+          {/* URL Input */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">رابط الصورة *</Label>
+              <Label htmlFor="imageUrl">رابط الصورة</Label>
               <Input
                 id="imageUrl"
                 type="url"
@@ -140,9 +167,9 @@ const GalleryManager = ({ entityId, entityType, images, entityName }: GalleryMan
               />
             </div>
           </div>
-          <Button onClick={handleAddImage} disabled={isLoading || !newImageUrl.trim()}>
+          <Button onClick={() => handleAddImage()} disabled={isLoading || !newImageUrl.trim()}>
             <Plus className="ml-2 h-4 w-4" />
-            إضافة الصورة
+            إضافة من الرابط
           </Button>
         </div>
 
