@@ -14,7 +14,7 @@ export const useMovies = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("movies")
-        .select("*, movie_gallery(*), movie_articles(*)")
+        .select("*, gallery:movie_gallery(*), articles:movie_articles(*)")
         .order("year", { ascending: false });
 
       if (error) throw error;
@@ -31,7 +31,7 @@ export const useMovie = (id: string | undefined) => {
       
       const { data, error } = await supabase
         .from("movies")
-        .select("*, movie_gallery(*), movie_articles(*)")
+        .select("*, gallery:movie_gallery(*), articles:movie_articles(*)")
         .eq("id", id)
         .maybeSingle();
 
@@ -58,7 +58,7 @@ export const useMoviesByYear = (year: number | null) => {
       if (!year) {
         const { data, error } = await supabase
           .from("movies")
-          .select("*, movie_gallery(*)")
+          .select("*, gallery:movie_gallery(*)")
           .order("year", { ascending: false });
         if (error) throw error;
         return data as Movie[];
@@ -66,7 +66,7 @@ export const useMoviesByYear = (year: number | null) => {
       
       const { data, error } = await supabase
         .from("movies")
-        .select("*, movie_gallery(*)")
+        .select("*, gallery:movie_gallery(*)")
         .eq("year", year)
         .order("title");
 
