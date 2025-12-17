@@ -7,7 +7,7 @@ import ArtistCard from "@/components/ArtistCard";
 import ArticlesSection from "@/components/ArticlesSection";
 import { useArtist, useArtists, useArtistMovies } from "@/hooks/useArtists";
 import { Movie } from "@/hooks/useMovies";
-import { ArrowRight, Calendar, Film } from "lucide-react";
+import { ArrowRight, Calendar, Film, Images } from "lucide-react";
 
 const ArtistDetail = () => {
   const { id } = useParams();
@@ -125,27 +125,34 @@ const ArtistDetail = () => {
                 </div>
 
                 {artist.biography && (
-                  <p className="text-lg text-muted-foreground leading-relaxed">
+                  <p className="text-lg text-muted-foreground leading-relaxed mb-6">
                     {artist.biography}
                   </p>
                 )}
+
+                <a href="#album" className="cinema-button inline-flex items-center gap-2">
+                  <Images className="w-5 h-5" />
+                  مشاهدة الالبوم
+                </a>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Image Gallery */}
-        {galleryImages.length > 0 && (
-          <ImageGallery images={galleryImages} title={artist.name} />
-        )}
+        {/* Image Gallery & Articles */}
+        <div id="album">
+          {galleryImages.length > 0 && (
+            <ImageGallery images={galleryImages} title={artist.name} />
+          )}
 
-        {/* Articles Section */}
-        {artist.articles && artist.articles.length > 0 && (
-          <ArticlesSection 
-            articles={artist.articles} 
-            title={`مقالات عن ${artist.name}`} 
-          />
-        )}
+          {/* Articles Section */}
+          {artist.articles && artist.articles.length > 0 && (
+            <ArticlesSection 
+              articles={artist.articles} 
+              title={`مقالات عن ${artist.name}`} 
+            />
+          )}
+        </div>
 
         {/* Filmography */}
         {artistMovies.length > 0 && (

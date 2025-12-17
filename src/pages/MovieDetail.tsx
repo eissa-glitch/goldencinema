@@ -5,7 +5,7 @@ import ImageGallery from "@/components/ImageGallery";
 import MovieCard from "@/components/MovieCard";
 import ArticlesSection from "@/components/ArticlesSection";
 import { useMovie, useMovies } from "@/hooks/useMovies";
-import { Star, Clock, Calendar, User, Play, ArrowRight } from "lucide-react";
+import { Star, Clock, Calendar, User, Images, ArrowRight } from "lucide-react";
 
 const MovieDetail = () => {
   const { id } = useParams();
@@ -156,19 +156,22 @@ const MovieDetail = () => {
                   )}
                 </div>
 
-                <button className="cinema-button">
-                  <Play className="w-5 h-5" />
-                  مشاهدة العرض
-                </button>
+                <a href="#album" className="cinema-button inline-flex items-center gap-2">
+                  <Images className="w-5 h-5" />
+                  مشاهدة الالبوم
+                </a>
               </div>
             </div>
           </div>
         </section>
 
         {/* Image Gallery */}
-        {galleryImages.length > 0 && (
-          <ImageGallery images={galleryImages} title={movie.title} />
-        )}
+        <div id="album">
+          {galleryImages.length > 0 && (
+            <ImageGallery images={galleryImages} title={movie.title} />
+          )}
+
+        </div>
 
         {/* Articles Section */}
         {movie.articles && movie.articles.length > 0 && (
