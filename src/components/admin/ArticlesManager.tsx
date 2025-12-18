@@ -35,6 +35,8 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [extractedText, setExtractedText] = useState("");
+  const [showExtractedDialog, setShowExtractedDialog] = useState(false);
   const queryClient = useQueryClient();
 
   const resetForm = () => {
@@ -60,8 +62,9 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
       if (error) throw error;
 
       if (data.success && data.text) {
-        setNewContent(data.text);
-        toast.success("تم استخراج النص بنجاح");
+        setExtractedText(data.text);
+        setShowExtractedDialog(true);
+        toast.success("تم استخراج النص بنجاح - يمكنك تعديله الآن");
       } else {
         toast.error(data.error || "لم يتم العثور على نص في الصورة");
       }
@@ -71,6 +74,12 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
     } finally {
       setIsExtracting(false);
     }
+  };
+
+  const handleApplyExtractedText = () => {
+    setNewContent(extractedText);
+    setShowExtractedDialog(false);
+    toast.success("تم تطبيق النص على محتوى المقال");
   };
 
   const handleAddArticle = async () => {
@@ -150,6 +159,40 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
   };
 
   return (
+    <>
+    {/* Extracted Text Edit Dialog */}
+    <Dialog open={showExtractedDialog} onOpenChange={setShowExtractedDialog}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Wand2 className="h-5 w-5" />
+            تعديل النص المستخرج
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            يمكنك تعديل النص المستخرج قبل تطبيقه على محتوى المقال
+          </p>
+          <Textarea
+            value={extractedText}
+            onChange={(e) => setExtractedText(e.target.value)}
+            rows={12}
+            className="text-right"
+            style={{ direction: 'rtl' }}
+            placeholder="النص المستخرج..."
+          />
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowExtractedDialog(false)}>
+              إلغاء
+            </Button>
+            <Button onClick={handleApplyExtractedText}>
+              تطبيق النص
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline" className="gap-1">
@@ -305,6 +348,7 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 
