@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, FileText, ExternalLink, Wand2, Loader2 } from "lucide-react";
+import { Plus, Trash2, FileText, ExternalLink, Wand2, Loader2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,6 +37,13 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractedText, setExtractedText] = useState("");
   const [showExtractedDialog, setShowExtractedDialog] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editSource, setEditSource] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
   const queryClient = useQueryClient();
 
   const resetForm = () => {
@@ -77,7 +84,11 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
   };
 
   const handleApplyExtractedText = () => {
-    setNewContent(extractedText);
+    if (showEditDialog) {
+      setEditContent(extractedText);
+    } else {
+      setNewContent(extractedText);
+    }
     setShowExtractedDialog(false);
     toast.success("تم تطبيق النص على محتوى المقال");
   };
@@ -158,6 +169,96 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
     }
   };
 
+  const openEditDialog = (article: Article) => {
+    setEditingArticle(article);
+    setEditTitle(article.title);
+    setEditContent(article.content || "");
+    setEditSource(article.source || "");
+    setEditDate(article.published_date || "");
+    setEditImageUrl(article.image_url || "");
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateArticle = async () => {
+    if (!editingArticle || !editTitle.trim()) {
+      toast.error("الرجاء إدخال عنوان المقال");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      let error;
+      const updateData = {
+        title: editTitle.trim(),
+        content: editContent.trim() || null,
+        source: editSource.trim() || null,
+        published_date: editDate || null,
+        image_url: editImageUrl || null,
+      };
+
+      if (entityType === "movie") {
+        const result = await supabase
+          .from("movie_articles")
+          .update(updateData)
+          .eq("id", editingArticle.id);
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from("artist_articles")
+          .update(updateData)
+          .eq("id", editingArticle.id);
+        error = result.error;
+      }
+
+      if (error) throw error;
+
+      toast.success("تم تحديث المقال بنجاح");
+      setShowEditDialog(false);
+      setEditingArticle(null);
+      queryClient.invalidateQueries({ queryKey: [entityType === "movie" ? "movies" : "artists"] });
+      queryClient.invalidateQueries({ queryKey: [entityType, entityId] });
+    } catch (error) {
+      console.error("Error updating article:", error);
+      toast.error("حدث خطأ أثناء تحديث المقال");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExtractTextForEdit = async () => {
+    if (!editImageUrl) {
+      toast.error("يرجى رفع صورة أولاً");
+      return;
+    }
+
+    setIsExtracting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-text-ocr", {
+        body: { imageUrl: editImageUrl },
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.text) {
+        setExtractedText(data.text);
+        setShowExtractedDialog(true);
+      } else {
+        toast.error(data.error || "لم يتم العثور على نص في الصورة");
+      }
+    } catch (error) {
+      console.error("OCR error:", error);
+      toast.error("حدث خطأ أثناء استخراج النص");
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const handleApplyExtractedTextToEdit = () => {
+    setEditContent(extractedText);
+    setShowExtractedDialog(false);
+    toast.success("تم تطبيق النص على محتوى المقال");
+  };
+
   return (
     <>
     {/* Extracted Text Edit Dialog */}
@@ -187,6 +288,111 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
             </Button>
             <Button onClick={handleApplyExtractedText}>
               تطبيق النص
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Edit Article Dialog */}
+    <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" dir="rtl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Pencil className="h-5 w-5" />
+            تعديل المقال
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="editTitle">عنوان المقال *</Label>
+            <Input
+              id="editTitle"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              placeholder="عنوان المقال"
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="editSource">المصدر</Label>
+              <Input
+                id="editSource"
+                value={editSource}
+                onChange={(e) => setEditSource(e.target.value)}
+                placeholder="اسم المصدر أو الرابط"
+                dir="ltr"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editDate">تاريخ النشر</Label>
+              <Input
+                id="editDate"
+                type="date"
+                value={editDate}
+                onChange={(e) => setEditDate(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>صورة المقال</Label>
+            <ImageUploader
+              onUpload={(url) => setEditImageUrl(url)}
+              currentImage={editImageUrl}
+              folder={`articles/${entityType}s`}
+            />
+            {editImageUrl && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleExtractTextForEdit}
+                disabled={isExtracting}
+                className="mt-2"
+              >
+                {isExtracting ? (
+                  <>
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    جاري استخراج النص...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="ml-2 h-4 w-4" />
+                    استخراج النص من الصورة (OCR)
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="editContent">محتوى المقال</Label>
+            <Textarea
+              id="editContent"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              placeholder="نص المقال..."
+              rows={8}
+              className="text-right"
+              style={{ direction: 'rtl' }}
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              إلغاء
+            </Button>
+            <Button onClick={handleUpdateArticle} disabled={isLoading || !editTitle.trim()}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  جاري الحفظ...
+                </>
+              ) : (
+                "حفظ التعديلات"
+              )}
             </Button>
           </div>
         </div>
@@ -328,14 +534,24 @@ const ArticlesManager = ({ entityId, entityType, articles, entityName }: Article
                       )}
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDeleteArticle(article.id)}
-                    disabled={isLoading}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEditDialog(article)}
+                      disabled={isLoading}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteArticle(article.id)}
+                      disabled={isLoading}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
