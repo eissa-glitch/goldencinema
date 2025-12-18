@@ -1,24 +1,32 @@
 import { useEffect, useState } from "react";
 import { Newspaper, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const newsItems = [
-  "🎬 إصدار جديد: فيلم 'النيل والحياة' يتصدر شباك التذاكر",
-  "⭐ تكريم الفنان الكبير عادل إمام في مهرجان القاهرة السينمائي",
-  "🏆 الفيلم المصري 'الإختيار' يفوز بجائزة أفضل فيلم عربي",
-  "📽️ مهرجان الجونة السينمائي يعلن عن قائمة الأفلام المشاركة",
-  "🎭 إعادة ترميم فيلم 'باب الحديد' بتقنية 4K",
-  "🌟 نجمة جديدة تنضم لبطولة الفيلم القادم للمخرج يوسف شاهين",
-];
+interface NewsItem {
+  id: string;
+  content: string;
+}
 
 const NewsTicker = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % newsItems.length);
-    }, 5000);
-    return () => clearInterval(interval);
+    const fetchNews = async () => {
+      const { data } = await supabase
+        .from("news_ticker")
+        .select("id, content")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (data && data.length > 0) {
+        setNewsItems(data);
+      }
+    };
+
+    fetchNews();
   }, []);
+
+  if (newsItems.length === 0) return null;
 
   return (
     <div className="bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 border-b border-gold/20">
@@ -33,11 +41,11 @@ const NewsTicker = () => {
             <div className="animate-marquee whitespace-nowrap flex items-center gap-8">
               {[...newsItems, ...newsItems].map((news, idx) => (
                 <span
-                  key={idx}
+                  key={`${news.id}-${idx}`}
                   className="text-sm text-foreground/90 inline-flex items-center gap-2"
                 >
                   <Sparkles className="w-3 h-3 text-gold" />
-                  {news}
+                  {news.content}
                 </span>
               ))}
             </div>
