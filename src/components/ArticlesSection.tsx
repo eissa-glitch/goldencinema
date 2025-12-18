@@ -118,8 +118,8 @@ const ArticlesSection = ({ articles, title = "مقالات وأخبار" }: Arti
               </div>
 
               {selectedArticle?.content && (
-                <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <p className="text-foreground leading-relaxed whitespace-pre-wrap text-lg">
+                <div className="prose prose-lg dark:prose-invert max-w-none text-right">
+                  <p className="text-foreground leading-relaxed whitespace-pre-wrap text-lg text-right" style={{ textAlign: 'right', direction: 'rtl' }}>
                     {selectedArticle.content}
                   </p>
                 </div>

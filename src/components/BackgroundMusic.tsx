@@ -1,27 +1,26 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Music, Volume2, VolumeX, Play, Pause } from "lucide-react";
+import { Music, Volume2, VolumeX, Play, Pause, Upload } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const BackgroundMusic = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(30);
   const [isMuted, setIsMuted] = useState(false);
+  const [hasAudio, setHasAudio] = useState(false);
+  const [audioName, setAudioName] = useState("لم يتم اختيار ملف");
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // أغنية "أهو ده اللي صار" - محمد عبد الوهاب
-  const musicUrl = "https://archive.org/download/aho-da-elly-sar/Aho%20Da%20Elly%20Sar.mp3";
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    audioRef.current = new Audio(musicUrl);
-    audioRef.current.loop = true;
-    audioRef.current.volume = volume / 100;
-
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -36,8 +35,37 @@ const BackgroundMusic = () => {
     }
   }, [volume, isMuted]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("audio/")) {
+      toast.error("يرجى اختيار ملف صوتي");
+      return;
+    }
+
+    // Clean up previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      URL.revokeObjectURL(audioRef.current.src);
+    }
+
+    const url = URL.createObjectURL(file);
+    audioRef.current = new Audio(url);
+    audioRef.current.loop = true;
+    audioRef.current.volume = volume / 100;
+    
+    setHasAudio(true);
+    setAudioName(file.name);
+    setIsPlaying(false);
+    toast.success("تم تحميل الملف الصوتي");
+  };
+
   const togglePlay = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      toast.error("يرجى اختيار ملف صوتي أولاً");
+      return;
+    }
 
     try {
       if (isPlaying) {
@@ -48,6 +76,7 @@ const BackgroundMusic = () => {
       setIsPlaying(!isPlaying);
     } catch (error) {
       console.error("Error playing audio:", error);
+      toast.error("حدث خطأ أثناء تشغيل الصوت");
     }
   };
 
@@ -84,9 +113,28 @@ const BackgroundMusic = () => {
             </div>
           </div>
 
-          <div className="text-center py-2">
-            <p className="text-sm font-medium">أهو ده اللي صار</p>
-            <p className="text-xs text-muted-foreground">محمد عبد الوهاب - 1930</p>
+          <div className="space-y-2">
+            <Label htmlFor="audioFile" className="text-sm">اختر ملف صوتي</Label>
+            <div className="flex gap-2">
+              <Input
+                ref={fileInputRef}
+                id="audioFile"
+                type="file"
+                accept="audio/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full"
+              >
+                <Upload className="h-4 w-4 ml-2" />
+                رفع ملف صوتي
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground truncate">{audioName}</p>
           </div>
 
           <div className="flex items-center justify-center gap-4">
@@ -95,6 +143,7 @@ const BackgroundMusic = () => {
               size="icon"
               onClick={toggleMute}
               className="h-10 w-10"
+              disabled={!hasAudio}
             >
               {isMuted || volume === 0 ? (
                 <VolumeX className="h-5 w-5" />
@@ -108,6 +157,7 @@ const BackgroundMusic = () => {
               size="icon"
               onClick={togglePlay}
               className="h-12 w-12 rounded-full"
+              disabled={!hasAudio}
             >
               {isPlaying ? (
                 <Pause className="h-6 w-6" />
@@ -116,7 +166,7 @@ const BackgroundMusic = () => {
               )}
             </Button>
 
-            <div className="w-10 h-10" /> {/* Spacer for symmetry */}
+            <div className="w-10 h-10" />
           </div>
 
           <div className="flex items-center gap-3">
@@ -127,12 +177,13 @@ const BackgroundMusic = () => {
               max={100}
               step={1}
               className="flex-1"
+              disabled={!hasAudio}
             />
             <Volume2 className="h-4 w-4 text-muted-foreground" />
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            من أول فيلم مصري ناطق
+            ارفع ملف MP3 أو أي ملف صوتي للتشغيل
           </p>
         </div>
       </PopoverContent>
