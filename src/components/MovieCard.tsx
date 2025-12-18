@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Star, Clock } from "lucide-react";
 import { Movie } from "@/hooks/useMovies";
+import placeholderMovie from "@/assets/placeholder-movie.jpg";
 
 interface MovieCardProps {
   movie: Movie;
@@ -16,11 +17,11 @@ const MovieCard = ({ movie, index = 0 }: MovieCardProps) => {
     >
       <div className="relative aspect-[2/3] overflow-hidden">
         <img
-          src={movie.poster || "/placeholder.svg"}
+          src={movie.poster || placeholderMovie}
           alt={movie.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           onError={(e) => {
-            e.currentTarget.src = "/placeholder.svg";
+            e.currentTarget.src = placeholderMovie;
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

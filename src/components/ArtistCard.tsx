@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Artist } from "@/hooks/useArtists";
+import placeholderArtist from "@/assets/placeholder-artist.jpg";
 
 interface ArtistCardProps {
   artist: Artist;
@@ -21,11 +22,11 @@ const ArtistCard = ({ artist, index = 0 }: ArtistCardProps) => {
     >
       <div className="relative aspect-square overflow-hidden">
         <img
-          src={artist.image || "/placeholder.svg"}
+          src={artist.image || placeholderArtist}
           alt={artist.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           onError={(e) => {
-            e.currentTarget.src = "/placeholder.svg";
+            e.currentTarget.src = placeholderArtist;
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
