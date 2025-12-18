@@ -4,10 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Film, Users, LogOut, Shield } from "lucide-react";
+import { Film, Users, LogOut, Shield, Newspaper } from "lucide-react";
 import { toast } from "sonner";
 import AdminMovies from "@/components/admin/AdminMovies";
 import AdminArtists from "@/components/admin/AdminArtists";
+import NewsTickerManager from "@/components/admin/NewsTickerManager";
 
 const AUTHORIZED_EMAIL = "michaelmounir396@gmail.com";
 
@@ -82,7 +83,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="movies" className="flex items-center gap-2">
               <Film className="h-4 w-4" />
               الأفلام
@@ -90,6 +91,10 @@ const Admin = () => {
             <TabsTrigger value="artists" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               الفنانين
+            </TabsTrigger>
+            <TabsTrigger value="news" className="flex items-center gap-2">
+              <Newspaper className="h-4 w-4" />
+              الأخبار
             </TabsTrigger>
           </TabsList>
 
@@ -99,6 +104,10 @@ const Admin = () => {
 
           <TabsContent value="artists">
             <AdminArtists />
+          </TabsContent>
+
+          <TabsContent value="news">
+            <NewsTickerManager />
           </TabsContent>
         </Tabs>
       </main>
