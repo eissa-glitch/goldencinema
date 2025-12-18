@@ -1,15 +1,39 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, Menu, X, Film, Shield, LogOut, User } from "lucide-react";
 import NewsTicker from "./NewsTicker";
+import SearchResults from "./SearchResults";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearch } from "@/hooks/useSearch";
 import { toast } from "sonner";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { results, isLoading } = useSearch(searchQuery);
+
+  // Close search when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+        setSearchQuery("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close search on route change
+  useEffect(() => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  }, [location.pathname]);
 
   const navLinks = [
     { path: "/", label: "الرئيسية" },
@@ -19,6 +43,11 @@ const Header = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  };
 
   return (
     <>
@@ -116,14 +145,24 @@ const Header = () => {
 
           {/* Search Bar */}
           {isSearchOpen && (
-            <div className="pb-4 animate-fade-in">
+            <div className="pb-4 animate-fade-in" ref={searchRef}>
               <div className="relative">
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ابحث عن فيلم أو فنان..."
                   className="w-full bg-secondary border border-gold/30 rounded-xl px-5 py-3 pr-12 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
+                  autoFocus
                 />
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                
+                <SearchResults
+                  results={results}
+                  isLoading={isLoading}
+                  onResultClick={handleCloseSearch}
+                  query={searchQuery}
+                />
               </div>
             </div>
           )}
