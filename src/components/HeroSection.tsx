@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Play, Calendar, Star, Sparkles } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
 import heroCinemaImage from "@/assets/hero-cinema.jpg";
+import placeholderMovie from "@/assets/placeholder-movie.jpg";
 
 const HeroSection = () => {
   const { data: movies, isLoading } = useMovies();
@@ -115,11 +116,11 @@ const HeroSection = () => {
               {/* Main Card */}
               <div className="cinema-card overflow-hidden animate-float relative bg-card">
                 <img
-                  src={featuredMovie.poster || "/placeholder.svg"}
+                  src={featuredMovie.poster || placeholderMovie}
                   alt={featuredMovie.title}
                   className="w-full aspect-[2/3] object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg";
+                    e.currentTarget.src = placeholderMovie;
                   }}
                 />
                 
