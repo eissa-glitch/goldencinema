@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, Film, Shield } from "lucide-react";
+import { Search, Menu, X, Film, Shield, LogOut, User } from "lucide-react";
 import NewsTicker from "./NewsTicker";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const navLinks = [
     { path: "/", label: "الرئيسية" },
@@ -62,6 +65,32 @@ const Header = () => {
               >
                 <Shield className="w-5 h-5 text-gold" />
               </Link>
+
+              {/* User/Logout */}
+              {user ? (
+                <button
+                  onClick={async () => {
+                    const { error } = await signOut();
+                    if (error) {
+                      toast.error("حدث خطأ أثناء تسجيل الخروج");
+                    } else {
+                      toast.success("تم تسجيل الخروج بنجاح");
+                    }
+                  }}
+                  className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-red-500/20 transition-colors group"
+                  title="تسجيل الخروج"
+                >
+                  <LogOut className="w-5 h-5 text-gold group-hover:text-red-400" />
+                </button>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-gold/20 transition-colors"
+                  title="تسجيل الدخول"
+                >
+                  <User className="w-5 h-5 text-gold" />
+                </Link>
+              )}
 
               {/* Search */}
               <button
@@ -130,6 +159,32 @@ const Header = () => {
                 <Shield className="w-5 h-5" />
                 لوحة التحكم
               </Link>
+              {user ? (
+                <button
+                  onClick={async () => {
+                    setIsMenuOpen(false);
+                    const { error } = await signOut();
+                    if (error) {
+                      toast.error("حدث خطأ أثناء تسجيل الخروج");
+                    } else {
+                      toast.success("تم تسجيل الخروج بنجاح");
+                    }
+                  }}
+                  className="py-3 px-4 rounded-lg text-lg font-medium transition-colors flex items-center gap-2 text-red-400 hover:bg-red-500/10"
+                >
+                  <LogOut className="w-5 h-5" />
+                  تسجيل الخروج
+                </button>
+              ) : (
+                <Link
+                  to="/auth"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="py-3 px-4 rounded-lg text-lg font-medium transition-colors flex items-center gap-2 text-foreground/80 hover:bg-gold/10 hover:text-gold"
+                >
+                  <User className="w-5 h-5" />
+                  تسجيل الدخول
+                </Link>
+              )}
             </nav>
           </div>
         )}
