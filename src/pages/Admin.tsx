@@ -9,17 +9,28 @@ import { toast } from "sonner";
 import AdminMovies from "@/components/admin/AdminMovies";
 import AdminArtists from "@/components/admin/AdminArtists";
 
+const AUTHORIZED_EMAIL = "michaelmounir396@gmail.com";
+
 const Admin = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { isAdmin, isLoading: roleLoading } = useIsAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("movies");
 
+  const isAuthorizedUser = user?.email === AUTHORIZED_EMAIL;
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (!authLoading && !roleLoading && user && !isAuthorizedUser) {
+      toast.error("غير مصرح لك بالوصول لهذه الصفحة");
+      navigate("/");
+    }
+  }, [user, authLoading, roleLoading, isAuthorizedUser, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -35,7 +46,7 @@ const Admin = () => {
     );
   }
 
-  if (!user) {
+  if (!user || !isAuthorizedUser) {
     return null;
   }
 
