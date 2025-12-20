@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Music, Volume2, VolumeX, Play, Pause, Upload } from "lucide-react";
+import { Music, Volume2, VolumeX, Play, Pause, Upload, Link } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BackgroundMusic = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -17,6 +18,7 @@ const BackgroundMusic = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [hasAudio, setHasAudio] = useState(false);
   const [audioName, setAudioName] = useState("لم يتم اختيار ملف");
+  const [audioUrl, setAudioUrl] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -47,7 +49,9 @@ const BackgroundMusic = () => {
     // Clean up previous audio
     if (audioRef.current) {
       audioRef.current.pause();
-      URL.revokeObjectURL(audioRef.current.src);
+      if (audioRef.current.src.startsWith("blob:")) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
     }
 
     const url = URL.createObjectURL(file);
@@ -57,8 +61,41 @@ const BackgroundMusic = () => {
     
     setHasAudio(true);
     setAudioName(file.name);
+    setAudioUrl("");
     setIsPlaying(false);
     toast.success("تم تحميل الملف الصوتي");
+  };
+
+  const handleUrlSubmit = () => {
+    if (!audioUrl.trim()) {
+      toast.error("يرجى إدخال رابط صوتي");
+      return;
+    }
+
+    // Clean up previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      if (audioRef.current.src.startsWith("blob:")) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+    }
+
+    audioRef.current = new Audio(audioUrl);
+    audioRef.current.loop = true;
+    audioRef.current.volume = volume / 100;
+    
+    audioRef.current.onerror = () => {
+      toast.error("فشل تحميل الرابط الصوتي");
+      setHasAudio(false);
+      setAudioName("لم يتم اختيار ملف");
+    };
+
+    audioRef.current.oncanplaythrough = () => {
+      setHasAudio(true);
+      setAudioName("رابط صوتي");
+      setIsPlaying(false);
+      toast.success("تم تحميل الرابط الصوتي");
+    };
   };
 
   const togglePlay = async () => {
@@ -104,7 +141,7 @@ const BackgroundMusic = () => {
           <Music className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72" side="top" align="start" dir="rtl">
+      <PopoverContent className="w-80" side="top" align="start" dir="rtl">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -113,9 +150,19 @@ const BackgroundMusic = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="audioFile" className="text-sm">اختر ملف صوتي</Label>
-            <div className="flex gap-2">
+          <Tabs defaultValue="file" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="file" className="text-xs">
+                <Upload className="h-3 w-3 ml-1" />
+                رفع ملف
+              </TabsTrigger>
+              <TabsTrigger value="url" className="text-xs">
+                <Link className="h-3 w-3 ml-1" />
+                رابط
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="file" className="space-y-2 mt-3">
               <Input
                 ref={fileInputRef}
                 id="audioFile"
@@ -131,11 +178,31 @@ const BackgroundMusic = () => {
                 className="w-full"
               >
                 <Upload className="h-4 w-4 ml-2" />
-                رفع ملف صوتي
+                اختر ملف صوتي
               </Button>
-            </div>
-            <p className="text-xs text-muted-foreground truncate">{audioName}</p>
-          </div>
+            </TabsContent>
+            
+            <TabsContent value="url" className="space-y-2 mt-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="أدخل رابط MP3..."
+                  value={audioUrl}
+                  onChange={(e) => setAudioUrl(e.target.value)}
+                  className="flex-1 text-sm"
+                  dir="ltr"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUrlSubmit}
+                >
+                  تحميل
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <p className="text-xs text-muted-foreground truncate text-center">{audioName}</p>
 
           <div className="flex items-center justify-center gap-4">
             <Button
@@ -181,10 +248,6 @@ const BackgroundMusic = () => {
             />
             <Volume2 className="h-4 w-4 text-muted-foreground" />
           </div>
-
-          <p className="text-xs text-muted-foreground text-center">
-            ارفع ملف MP3 أو أي ملف صوتي للتشغيل
-          </p>
         </div>
       </PopoverContent>
     </Popover>
