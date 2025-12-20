@@ -4,6 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import MovieCard from "@/components/MovieCard";
 import ArtistCard from "@/components/ArtistCard";
 import YearTimeline from "@/components/YearTimeline";
+import VideoPlayer from "@/components/VideoPlayer";
 import { useMovies } from "@/hooks/useMovies";
 import { useArtists } from "@/hooks/useArtists";
 import { Link } from "react-router-dom";
@@ -58,6 +59,9 @@ const Index = () => {
             )}
           </div>
         </section>
+
+        {/* Video Player */}
+        <VideoPlayer />
 
         {/* Year Timeline */}
         <YearTimeline />
