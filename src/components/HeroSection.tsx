@@ -1,12 +1,31 @@
 import { Link } from "react-router-dom";
-import { Play, Calendar, Star, Sparkles } from "lucide-react";
+import { Play, Calendar, Star, Sparkles, Pencil, Check, X } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
+import { useState, useEffect } from "react";
 import heroCinemaImage from "@/assets/hero-cinema.jpg";
 import placeholderMovie from "@/assets/placeholder-movie.jpg";
+import VideoPlayer from "./VideoPlayer";
 
 const HeroSection = () => {
   const { data: movies, isLoading } = useMovies();
   const featuredMovie = movies?.[0];
+  
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [mainTitle, setMainTitle] = useState(() => {
+    return localStorage.getItem("archiveTitle") || "الأرشيف السينمائي العربي";
+  });
+  const [tempTitle, setTempTitle] = useState(mainTitle);
+
+  const handleSaveTitle = () => {
+    setMainTitle(tempTitle);
+    localStorage.setItem("archiveTitle", tempTitle);
+    setIsEditingTitle(false);
+  };
+
+  const handleCancelEdit = () => {
+    setTempTitle(mainTitle);
+    setIsEditingTitle(false);
+  };
 
   if (isLoading || !featuredMovie) {
     return (
@@ -65,9 +84,44 @@ const HeroSection = () => {
               )}
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-amiri font-bold text-gradient-gold mb-6 leading-tight">
-              الأرشيف السينمائي العربي
-            </h1>
+            <div className="flex items-center gap-4 mb-6">
+              {isEditingTitle ? (
+                <div className="flex items-center gap-2 w-full">
+                  <input
+                    type="text"
+                    value={tempTitle}
+                    onChange={(e) => setTempTitle(e.target.value)}
+                    className="text-4xl md:text-5xl font-amiri font-bold bg-background/50 border border-gold/50 rounded-lg px-4 py-2 text-gold w-full focus:outline-none focus:border-gold"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveTitle}
+                    className="p-2 bg-green-600 hover:bg-green-700 rounded-full transition-colors"
+                  >
+                    <Check className="w-6 h-6 text-white" />
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="p-2 bg-red-600 hover:bg-red-700 rounded-full transition-colors"
+                  >
+                    <X className="w-6 h-6 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-5xl md:text-7xl font-amiri font-bold text-gradient-gold leading-tight">
+                    {mainTitle}
+                  </h1>
+                  <button
+                    onClick={() => setIsEditingTitle(true)}
+                    className="p-2 bg-gold/20 hover:bg-gold/30 rounded-full transition-colors"
+                    title="تعديل العنوان"
+                  >
+                    <Pencil className="w-5 h-5 text-gold" />
+                  </button>
+                </>
+              )}
+            </div>
 
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl">
               اكتشف روائع السينما العربية من الحقبة الذهبية إلى اليوم. 
@@ -166,6 +220,11 @@ const HeroSection = () => {
         {Array.from({ length: 20 }).map((_, i) => (
           <div key={i} className="w-4 h-4 bg-gold/30 rounded-sm" />
         ))}
+      </div>
+
+      {/* Video Player Section */}
+      <div className="absolute bottom-0 left-0 right-0 translate-y-full">
+        <VideoPlayer />
       </div>
     </section>
   );
