@@ -16,6 +16,25 @@ import {
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import { useIsAdmin } from "@/hooks/useUserRole";
+
+// Helper function to extract YouTube video ID
+const getYouTubeVideoId = (url: string): string | null => {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/shorts\/([^&\n?#]+)/,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+};
+
+const isYouTubeUrl = (url: string): boolean => {
+  return url.includes("youtube.com") || url.includes("youtu.be");
+};
 
 const VideoPlayer = () => {
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
@@ -27,8 +46,11 @@ const VideoPlayer = () => {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [videoName, setVideoName] = useState("");
+  const [isYouTube, setIsYouTube] = useState(false);
+  const [youtubeId, setYoutubeId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isAdmin } = useIsAdmin();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,6 +70,8 @@ const VideoPlayer = () => {
     setVideoName(file.name);
     setIsPlaying(false);
     setProgress(0);
+    setIsYouTube(false);
+    setYoutubeId(null);
     toast.success("تم تحميل الفيديو");
   };
 
@@ -61,10 +85,25 @@ const VideoPlayer = () => {
       URL.revokeObjectURL(videoSrc);
     }
 
+    // Check if it's a YouTube URL
+    if (isYouTubeUrl(videoUrl)) {
+      const ytId = getYouTubeVideoId(videoUrl);
+      if (ytId) {
+        setYoutubeId(ytId);
+        setIsYouTube(true);
+        setVideoSrc(null);
+        setVideoName("فيديو يوتيوب");
+        toast.success("تم تحميل فيديو يوتيوب");
+        return;
+      }
+    }
+
     setVideoSrc(videoUrl);
     setVideoName("فيديو من رابط");
     setIsPlaying(false);
     setProgress(0);
+    setIsYouTube(false);
+    setYoutubeId(null);
     toast.success("تم تحميل الفيديو");
   };
 
@@ -140,21 +179,8 @@ const VideoPlayer = () => {
   };
 
   return (
-    <section className="py-16 px-4" dir="rtl">
-      <div className="container mx-auto max-w-5xl">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-4">
-            <Film className="h-5 w-5 text-primary" />
-            <span className="text-primary font-semibold">مشغل الفيديو</span>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            شاهد أفضل اللحظات السينمائية
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            استمتع بمشاهدة مقاطع الفيديو والأفلام الوثائقية عن السينما المصرية الكلاسيكية
-          </p>
-        </div>
-
+    <section className="py-8 px-4" dir="rtl">
+      <div className="container mx-auto max-w-4xl">
         <div className="relative group">
           {/* Decorative effects */}
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 via-secondary/50 to-primary/50 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
@@ -163,7 +189,15 @@ const VideoPlayer = () => {
           <div className="relative bg-card rounded-2xl overflow-hidden border border-border shadow-2xl">
             {/* Video container */}
             <div className="relative aspect-video bg-black">
-              {videoSrc ? (
+              {isYouTube && youtubeId ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="YouTube video"
+                />
+              ) : videoSrc ? (
                 <video
                   ref={videoRef}
                   src={videoSrc}
@@ -183,8 +217,8 @@ const VideoPlayer = () => {
                 </div>
               )}
 
-              {/* Play overlay */}
-              {videoSrc && !isPlaying && (
+              {/* Play overlay - only for non-YouTube videos */}
+              {videoSrc && !isPlaying && !isYouTube && (
                 <button
                   onClick={togglePlay}
                   className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -196,152 +230,156 @@ const VideoPlayer = () => {
               )}
             </div>
 
-            {/* Controls */}
-            <div className="p-4 bg-gradient-to-t from-background to-card space-y-3">
-              {/* Progress bar */}
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-12 text-center">
-                  {formatTime(currentTime)}
-                </span>
-                <Slider
-                  value={[progress]}
-                  onValueChange={handleProgressChange}
-                  max={100}
-                  step={0.1}
-                  className="flex-1"
-                  disabled={!videoSrc}
-                />
-                <span className="text-xs text-muted-foreground w-12 text-center">
-                  {formatTime(duration)}
-                </span>
-              </div>
-
-              {/* Control buttons */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => skip(-10)}
-                    disabled={!videoSrc}
-                    className="hover:bg-primary/20"
-                  >
-                    <SkipBack className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={togglePlay}
-                    disabled={!videoSrc}
-                    className="h-12 w-12 rounded-full shadow-lg"
-                  >
-                    {isPlaying ? (
-                      <Pause className="h-6 w-6" />
-                    ) : (
-                      <Play className="h-6 w-6 mr-0.5" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => skip(10)}
-                    disabled={!videoSrc}
-                    className="hover:bg-primary/20"
-                  >
-                    <SkipForward className="h-5 w-5" />
-                  </Button>
-                </div>
-
+            {/* Controls - hide for YouTube */}
+            {!isYouTube && (
+              <div className="p-4 bg-gradient-to-t from-background to-card space-y-3">
+                {/* Progress bar */}
                 <div className="flex items-center gap-3">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleMute}
-                    disabled={!videoSrc}
-                    className="hover:bg-primary/20"
-                  >
-                    {isMuted || volume === 0 ? (
-                      <VolumeX className="h-5 w-5" />
-                    ) : (
-                      <Volume2 className="h-5 w-5" />
-                    )}
-                  </Button>
+                  <span className="text-xs text-muted-foreground w-12 text-center">
+                    {formatTime(currentTime)}
+                  </span>
                   <Slider
-                    value={[volume]}
-                    onValueChange={handleVolumeChange}
+                    value={[progress]}
+                    onValueChange={handleProgressChange}
                     max={100}
-                    step={1}
-                    className="w-24"
+                    step={0.1}
+                    className="flex-1"
                     disabled={!videoSrc}
                   />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleFullscreen}
-                    disabled={!videoSrc}
-                    className="hover:bg-primary/20"
-                  >
-                    <Maximize className="h-5 w-5" />
-                  </Button>
+                  <span className="text-xs text-muted-foreground w-12 text-center">
+                    {formatTime(duration)}
+                  </span>
                 </div>
-              </div>
 
-              {/* Video name */}
-              {videoName && (
-                <p className="text-sm text-muted-foreground text-center truncate">
-                  {videoName}
-                </p>
-              )}
-            </div>
-
-            {/* Upload section */}
-            <div className="p-4 border-t border-border bg-muted/30">
-              <Tabs defaultValue="url" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="url" className="gap-2">
-                    <Link className="h-4 w-4" />
-                    رابط فيديو
-                  </TabsTrigger>
-                  <TabsTrigger value="file" className="gap-2">
-                    <Upload className="h-4 w-4" />
-                    رفع ملف
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="url" className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="أدخل رابط الفيديو (YouTube, Vimeo, MP4...)"
-                      value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      className="flex-1"
-                      dir="ltr"
-                    />
-                    <Button onClick={handleUrlSubmit} className="shrink-0">
-                      تشغيل
+                {/* Control buttons */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => skip(-10)}
+                      disabled={!videoSrc}
+                      className="hover:bg-primary/20"
+                    >
+                      <SkipBack className="h-5 w-5" />
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="icon"
+                      onClick={togglePlay}
+                      disabled={!videoSrc}
+                      className="h-12 w-12 rounded-full shadow-lg"
+                    >
+                      {isPlaying ? (
+                        <Pause className="h-6 w-6" />
+                      ) : (
+                        <Play className="h-6 w-6 mr-0.5" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => skip(10)}
+                      disabled={!videoSrc}
+                      className="hover:bg-primary/20"
+                    >
+                      <SkipForward className="h-5 w-5" />
                     </Button>
                   </div>
-                </TabsContent>
 
-                <TabsContent value="file" className="space-y-2">
-                  <Input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="video/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full gap-2"
-                  >
-                    <Upload className="h-4 w-4" />
-                    اختر ملف فيديو
-                  </Button>
-                </TabsContent>
-              </Tabs>
-            </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleMute}
+                      disabled={!videoSrc}
+                      className="hover:bg-primary/20"
+                    >
+                      {isMuted || volume === 0 ? (
+                        <VolumeX className="h-5 w-5" />
+                      ) : (
+                        <Volume2 className="h-5 w-5" />
+                      )}
+                    </Button>
+                    <Slider
+                      value={[volume]}
+                      onValueChange={handleVolumeChange}
+                      max={100}
+                      step={1}
+                      className="w-24"
+                      disabled={!videoSrc}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleFullscreen}
+                      disabled={!videoSrc}
+                      className="hover:bg-primary/20"
+                    >
+                      <Maximize className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Video name */}
+                {videoName && (
+                  <p className="text-sm text-muted-foreground text-center truncate">
+                    {videoName}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Upload section - only for admins */}
+            {isAdmin && (
+              <div className="p-4 border-t border-border bg-muted/30">
+                <Tabs defaultValue="url" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="url" className="gap-2">
+                      <Link className="h-4 w-4" />
+                      رابط فيديو
+                    </TabsTrigger>
+                    <TabsTrigger value="file" className="gap-2">
+                      <Upload className="h-4 w-4" />
+                      رفع ملف
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="url" className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="أدخل رابط الفيديو (YouTube, MP4...)"
+                        value={videoUrl}
+                        onChange={(e) => setVideoUrl(e.target.value)}
+                        className="flex-1"
+                        dir="ltr"
+                      />
+                      <Button onClick={handleUrlSubmit} className="shrink-0">
+                        تشغيل
+                      </Button>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="file" className="space-y-2">
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="video/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      اختر ملف فيديو
+                    </Button>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
           </div>
         </div>
       </div>
