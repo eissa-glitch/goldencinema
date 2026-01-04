@@ -1,31 +1,22 @@
 import { Link } from "react-router-dom";
-import { Play, Calendar, Star, Sparkles, Pencil, Check, X } from "lucide-react";
+import { Play, Calendar, Star, Sparkles } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
-import { useState, useEffect } from "react";
 import heroCinemaImage from "@/assets/hero-cinema.jpg";
 import placeholderMovie from "@/assets/placeholder-movie.jpg";
 import VideoPlayer from "./VideoPlayer";
+import EditableText from "./EditableText";
+import { useContent } from "@/hooks/useSiteContent";
 
 const HeroSection = () => {
   const { data: movies, isLoading } = useMovies();
   const featuredMovie = movies?.[0];
   
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [mainTitle, setMainTitle] = useState(() => {
-    return localStorage.getItem("archiveTitle") || "الأرشيف السينمائي العربي";
-  });
-  const [tempTitle, setTempTitle] = useState(mainTitle);
-
-  const handleSaveTitle = () => {
-    setMainTitle(tempTitle);
-    localStorage.setItem("archiveTitle", tempTitle);
-    setIsEditingTitle(false);
-  };
-
-  const handleCancelEdit = () => {
-    setTempTitle(mainTitle);
-    setIsEditingTitle(false);
-  };
+  const statMovies = useContent("stat_movies", "١٠٠٠+");
+  const statMoviesLabel = useContent("stat_movies_label", "فيلم");
+  const statArtists = useContent("stat_artists", "٥٠٠+");
+  const statArtistsLabel = useContent("stat_artists_label", "فنان");
+  const statYears = useContent("stat_years", "٧٠+");
+  const statYearsLabel = useContent("stat_years_label", "عام");
 
   if (isLoading || !featuredMovie) {
     return (
@@ -74,7 +65,11 @@ const HeroSection = () => {
           <div className="animate-fade-in-up">
             <div className="flex items-center gap-3 mb-6">
               <span className="bg-gold/20 text-gold px-4 py-1 rounded-full text-sm font-medium">
-                فيلم مميز
+                <EditableText 
+                  contentKey="hero_badge" 
+                  fallback="فيلم مميز" 
+                  className="text-gold"
+                />
               </span>
               {featuredMovie.rating && (
                 <div className="flex items-center gap-1">
@@ -84,58 +79,40 @@ const HeroSection = () => {
               )}
             </div>
 
-            <div className="flex items-center gap-4 mb-6">
-              {isEditingTitle ? (
-                <div className="flex items-center gap-2 w-full">
-                  <input
-                    type="text"
-                    value={tempTitle}
-                    onChange={(e) => setTempTitle(e.target.value)}
-                    className="text-4xl md:text-5xl font-amiri font-bold bg-background/50 border border-gold/50 rounded-lg px-4 py-2 text-gold w-full focus:outline-none focus:border-gold"
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleSaveTitle}
-                    className="p-2 bg-green-600 hover:bg-green-700 rounded-full transition-colors"
-                  >
-                    <Check className="w-6 h-6 text-white" />
-                  </button>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="p-2 bg-red-600 hover:bg-red-700 rounded-full transition-colors"
-                  >
-                    <X className="w-6 h-6 text-white" />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <h1 className="text-5xl md:text-7xl font-amiri font-bold text-gradient-gold leading-tight">
-                    {mainTitle}
-                  </h1>
-                  <button
-                    onClick={() => setIsEditingTitle(true)}
-                    className="p-2 bg-gold/20 hover:bg-gold/30 rounded-full transition-colors"
-                    title="تعديل العنوان"
-                  >
-                    <Pencil className="w-5 h-5 text-gold" />
-                  </button>
-                </>
-              )}
+            <div className="mb-6">
+              <EditableText 
+                contentKey="hero_title" 
+                fallback="الأرشيف السينمائي العربي" 
+                as="h1"
+                className="text-5xl md:text-7xl font-amiri font-bold text-gradient-gold leading-tight"
+                inputClassName="text-4xl md:text-5xl font-amiri font-bold text-gold"
+              />
             </div>
 
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl">
-              اكتشف روائع السينما العربية من الحقبة الذهبية إلى اليوم. 
-              أكبر مجموعة من الأفلام العربية الكلاسيكية والحديثة في مكان واحد.
-            </p>
+            <div className="mb-8">
+              <EditableText 
+                contentKey="hero_description" 
+                fallback="اكتشف روائع السينما العربية من الحقبة الذهبية إلى اليوم. أكبر مجموعة من الأفلام العربية الكلاسيكية والحديثة في مكان واحد." 
+                as="p"
+                className="text-xl text-muted-foreground leading-relaxed max-w-xl"
+                multiline
+              />
+            </div>
 
             <div className="flex flex-wrap gap-4 mb-8">
               <Link to="/movies" className="cinema-button">
                 <Play className="w-5 h-5" />
-                استكشف الأفلام
+                <EditableText 
+                  contentKey="btn_explore_movies" 
+                  fallback="استكشف الأفلام"
+                />
               </Link>
               <Link to="/artists" className="cinema-button-outline">
                 <Calendar className="w-5 h-5" />
-                تصفح الفنانين
+                <EditableText 
+                  contentKey="btn_browse_artists" 
+                  fallback="تصفح الفنانين"
+                />
               </Link>
             </div>
 
@@ -146,18 +123,24 @@ const HeroSection = () => {
 
             {/* Stats */}
             <div className="flex flex-wrap gap-8">
-              {[
-                { value: "١٠٠٠+", label: "فيلم" },
-                { value: "٥٠٠+", label: "فنان" },
-                { value: "٧٠+", label: "عام" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-3xl font-amiri font-bold text-gold">
-                    {stat.value}
-                  </div>
-                  <div className="text-muted-foreground">{stat.label}</div>
+              <div className="text-center">
+                <div className="text-3xl font-amiri font-bold text-gold">
+                  {statMovies}
                 </div>
-              ))}
+                <div className="text-muted-foreground">{statMoviesLabel}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-amiri font-bold text-gold">
+                  {statArtists}
+                </div>
+                <div className="text-muted-foreground">{statArtistsLabel}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-amiri font-bold text-gold">
+                  {statYears}
+                </div>
+                <div className="text-muted-foreground">{statYearsLabel}</div>
+              </div>
             </div>
           </div>
 
