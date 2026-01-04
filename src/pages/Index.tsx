@@ -60,8 +60,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Video Player */}
-        <VideoPlayer />
 
         {/* Year Timeline */}
         <YearTimeline />
