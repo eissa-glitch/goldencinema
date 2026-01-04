@@ -128,7 +128,7 @@ const HeroSection = () => {
               أكبر مجموعة من الأفلام العربية الكلاسيكية والحديثة في مكان واحد.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-12">
+            <div className="flex flex-wrap gap-4 mb-8">
               <Link to="/movies" className="cinema-button">
                 <Play className="w-5 h-5" />
                 استكشف الأفلام
@@ -137,6 +137,11 @@ const HeroSection = () => {
                 <Calendar className="w-5 h-5" />
                 تصفح الفنانين
               </Link>
+            </div>
+
+            {/* Video Player */}
+            <div className="mb-8">
+              <VideoPlayer />
             </div>
 
             {/* Stats */}
@@ -222,10 +227,6 @@ const HeroSection = () => {
         ))}
       </div>
 
-      {/* Video Player Section */}
-      <div className="absolute bottom-0 left-0 right-0 translate-y-full">
-        <VideoPlayer />
-      </div>
     </section>
   );
 };
