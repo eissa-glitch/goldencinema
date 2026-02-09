@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +17,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/hooks/useUserRole";
+import { useContent, useUpdateContent, useCreateContent } from "@/hooks/useSiteContent";
 
 // Helper function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string | null => {
@@ -37,6 +38,10 @@ const isYouTubeUrl = (url: string): boolean => {
 };
 
 const VideoPlayer = () => {
+  const savedVideoUrl = useContent("video_url", "");
+  const updateContent = useUpdateContent();
+  const createContent = useCreateContent();
+  
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,9 +53,31 @@ const VideoPlayer = () => {
   const [videoName, setVideoName] = useState("");
   const [isYouTube, setIsYouTube] = useState(false);
   const [youtubeId, setYoutubeId] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isAdmin } = useIsAdmin();
+
+  // Load saved video URL on mount
+  useEffect(() => {
+    if (savedVideoUrl && !initialized) {
+      setInitialized(true);
+      if (isYouTubeUrl(savedVideoUrl)) {
+        const ytId = getYouTubeVideoId(savedVideoUrl);
+        if (ytId) {
+          setYoutubeId(ytId);
+          setIsYouTube(true);
+          setVideoSrc(null);
+          setVideoName("فيديو يوتيوب");
+          return;
+        }
+      }
+      setVideoSrc(savedVideoUrl);
+      setVideoName("فيديو محفوظ");
+      setIsYouTube(false);
+      setYoutubeId(null);
+    }
+  }, [savedVideoUrl, initialized]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,6 +112,14 @@ const VideoPlayer = () => {
       URL.revokeObjectURL(videoSrc);
     }
 
+    const saveUrl = (url: string) => {
+      if (savedVideoUrl) {
+        updateContent.mutate({ key: "video_url", value: url });
+      } else {
+        createContent.mutate({ key: "video_url", value: url, description: "رابط الفيديو الرئيسي" });
+      }
+    };
+
     // Check if it's a YouTube URL
     if (isYouTubeUrl(videoUrl)) {
       const ytId = getYouTubeVideoId(videoUrl);
@@ -93,7 +128,8 @@ const VideoPlayer = () => {
         setIsYouTube(true);
         setVideoSrc(null);
         setVideoName("فيديو يوتيوب");
-        toast.success("تم تحميل فيديو يوتيوب");
+        saveUrl(videoUrl);
+        toast.success("تم حفظ وتشغيل فيديو يوتيوب");
         return;
       }
     }
@@ -104,7 +140,8 @@ const VideoPlayer = () => {
     setProgress(0);
     setIsYouTube(false);
     setYoutubeId(null);
-    toast.success("تم تحميل الفيديو");
+    saveUrl(videoUrl);
+    toast.success("تم حفظ وتشغيل الفيديو");
   };
 
   const togglePlay = async () => {
