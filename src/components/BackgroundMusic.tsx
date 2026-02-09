@@ -8,19 +8,44 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsAdmin } from "@/hooks/useUserRole";
+import { useContent, useUpdateContent, useCreateContent } from "@/hooks/useSiteContent";
 
 const BackgroundMusic = () => {
+  const savedMusicUrl = useContent("music_url", "");
+  const updateContent = useUpdateContent();
+  const createContent = useCreateContent();
+  const { isAdmin } = useIsAdmin();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(30);
   const [isMuted, setIsMuted] = useState(false);
   const [hasAudio, setHasAudio] = useState(false);
   const [audioName, setAudioName] = useState("لم يتم اختيار ملف");
   const [audioUrl, setAudioUrl] = useState("");
+  const [initialized, setInitialized] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Load saved music URL
+  useEffect(() => {
+    if (savedMusicUrl && !initialized) {
+      setInitialized(true);
+      audioRef.current = new Audio(savedMusicUrl);
+      audioRef.current.loop = true;
+      audioRef.current.volume = volume / 100;
+      audioRef.current.onerror = () => {
+        setHasAudio(false);
+        setAudioName("لم يتم اختيار ملف");
+      };
+      audioRef.current.oncanplaythrough = () => {
+        setHasAudio(true);
+        setAudioName("موسيقى محفوظة");
+      };
+    }
+  }, [savedMusicUrl, initialized]);
 
   useEffect(() => {
     return () => {
@@ -37,6 +62,14 @@ const BackgroundMusic = () => {
     }
   }, [volume, isMuted]);
 
+  const saveMusicUrl = (url: string) => {
+    if (savedMusicUrl) {
+      updateContent.mutate({ key: "music_url", value: url });
+    } else {
+      createContent.mutate({ key: "music_url", value: url, description: "رابط الموسيقى الخلفية" });
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -46,7 +79,6 @@ const BackgroundMusic = () => {
       return;
     }
 
-    // Clean up previous audio
     if (audioRef.current) {
       audioRef.current.pause();
       if (audioRef.current.src.startsWith("blob:")) {
@@ -72,7 +104,6 @@ const BackgroundMusic = () => {
       return;
     }
 
-    // Clean up previous audio
     if (audioRef.current) {
       audioRef.current.pause();
       if (audioRef.current.src.startsWith("blob:")) {
@@ -94,7 +125,8 @@ const BackgroundMusic = () => {
       setHasAudio(true);
       setAudioName("رابط صوتي");
       setIsPlaying(false);
-      toast.success("تم تحميل الرابط الصوتي");
+      saveMusicUrl(audioUrl);
+      toast.success("تم حفظ وتحميل الرابط الصوتي");
     };
   };
 
@@ -150,57 +182,59 @@ const BackgroundMusic = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="file" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="file" className="text-xs">
-                <Upload className="h-3 w-3 ml-1" />
-                رفع ملف
-              </TabsTrigger>
-              <TabsTrigger value="url" className="text-xs">
-                <Link className="h-3 w-3 ml-1" />
-                رابط
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="file" className="space-y-2 mt-3">
-              <Input
-                ref={fileInputRef}
-                id="audioFile"
-                type="file"
-                accept="audio/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full"
-              >
-                <Upload className="h-4 w-4 ml-2" />
-                اختر ملف صوتي
-              </Button>
-            </TabsContent>
-            
-            <TabsContent value="url" className="space-y-2 mt-3">
-              <div className="flex gap-2">
+          {isAdmin && (
+            <Tabs defaultValue="file" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="file" className="text-xs">
+                  <Upload className="h-3 w-3 ml-1" />
+                  رفع ملف
+                </TabsTrigger>
+                <TabsTrigger value="url" className="text-xs">
+                  <Link className="h-3 w-3 ml-1" />
+                  رابط
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="file" className="space-y-2 mt-3">
                 <Input
-                  placeholder="أدخل رابط MP3..."
-                  value={audioUrl}
-                  onChange={(e) => setAudioUrl(e.target.value)}
-                  className="flex-1 text-sm"
-                  dir="ltr"
+                  ref={fileInputRef}
+                  id="audioFile"
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleFileChange}
+                  className="hidden"
                 />
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleUrlSubmit}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full"
                 >
-                  تحميل
+                  <Upload className="h-4 w-4 ml-2" />
+                  اختر ملف صوتي
                 </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+              
+              <TabsContent value="url" className="space-y-2 mt-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="أدخل رابط MP3..."
+                    value={audioUrl}
+                    onChange={(e) => setAudioUrl(e.target.value)}
+                    className="flex-1 text-sm"
+                    dir="ltr"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUrlSubmit}
+                  >
+                    تحميل
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
 
           <p className="text-xs text-muted-foreground truncate text-center">{audioName}</p>
 
