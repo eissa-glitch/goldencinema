@@ -1,22 +1,45 @@
 import { Link } from "react-router-dom";
-import { Play, Calendar, Star, Sparkles } from "lucide-react";
+import { Play, Calendar, Star, Sparkles, ImageIcon } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
 import heroCinemaImage from "@/assets/hero-cinema.jpg";
 import placeholderMovie from "@/assets/placeholder-movie.jpg";
 import VideoPlayer from "./VideoPlayer";
 import EditableText from "./EditableText";
-import { useContent } from "@/hooks/useSiteContent";
+import { useContent, useUpdateContent, useCreateContent } from "@/hooks/useSiteContent";
+import { useIsAdmin } from "@/hooks/useUserRole";
+import { useState } from "react";
 
 const HeroSection = () => {
   const { data: movies, isLoading } = useMovies();
   const featuredMovie = movies?.[0];
+  const { isAdmin } = useIsAdmin();
   
+  const heroImage = useContent("hero_card_image", "");
+  const heroCardTitle = useContent("hero_card_title", "");
+  const heroCardSubtitle = useContent("hero_card_subtitle", "");
+  const updateContent = useUpdateContent();
+  const createContent = useCreateContent();
+  const [imageInput, setImageInput] = useState("");
+  const [showImageEdit, setShowImageEdit] = useState(false);
+
   const statMovies = useContent("stat_movies", "١٠٠٠+");
   const statMoviesLabel = useContent("stat_movies_label", "فيلم");
   const statArtists = useContent("stat_artists", "٥٠٠+");
   const statArtistsLabel = useContent("stat_artists_label", "فنان");
   const statYears = useContent("stat_years", "٧٠+");
   const statYearsLabel = useContent("stat_years_label", "عام");
+
+  const saveContent = (key: string, value: string) => {
+    if (heroImage || heroCardTitle || heroCardSubtitle) {
+      updateContent.mutate({ key, value });
+    } else {
+      createContent.mutate({ key, value });
+    }
+  };
+
+  const displayImage = heroImage || featuredMovie?.poster || placeholderMovie;
+  const displayTitle = heroCardTitle || featuredMovie?.title || "";
+  const displaySubtitle = heroCardSubtitle || (featuredMovie ? `${featuredMovie.year} • ${featuredMovie.director}` : "");
 
   if (isLoading || !featuredMovie) {
     return (
@@ -158,13 +181,48 @@ const HeroSection = () => {
               {/* Main Card */}
               <div className="cinema-card overflow-hidden animate-float relative bg-card">
                 <img
-                  src={featuredMovie.poster || placeholderMovie}
-                  alt={featuredMovie.title}
+                  src={displayImage}
+                  alt={displayTitle}
                   className="w-full aspect-[2/3] object-cover"
                   onError={(e) => {
                     e.currentTarget.src = placeholderMovie;
                   }}
                 />
+                
+                {/* Admin Edit Button */}
+                {isAdmin && (
+                  <button
+                    onClick={() => setShowImageEdit(!showImageEdit)}
+                    className="absolute top-4 left-4 z-20 bg-background/80 p-2 rounded-full hover:bg-background transition-colors"
+                  >
+                    <ImageIcon className="w-5 h-5 text-gold" />
+                  </button>
+                )}
+
+                {/* Admin Image Edit Panel */}
+                {isAdmin && showImageEdit && (
+                  <div className="absolute inset-0 z-30 bg-background/95 p-4 flex flex-col gap-3 justify-center">
+                    <label className="text-sm text-muted-foreground">رابط الصورة</label>
+                    <input
+                      value={imageInput}
+                      onChange={(e) => setImageInput(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full px-3 py-2 rounded border border-gold/30 bg-background text-foreground text-sm"
+                      dir="ltr"
+                    />
+                    <button
+                      onClick={() => {
+                        if (imageInput.trim()) {
+                          saveContent("hero_card_image", imageInput.trim());
+                          setShowImageEdit(false);
+                        }
+                      }}
+                      className="bg-gold text-background px-4 py-2 rounded text-sm font-medium"
+                    >
+                      حفظ
+                    </button>
+                  </div>
+                )}
                 
                 {/* Shine Effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gold/30 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-700" />
@@ -183,9 +241,11 @@ const HeroSection = () => {
                 {/* Movie Info Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/90 to-transparent">
                   <h3 className="text-2xl font-amiri font-bold text-foreground mb-2">
-                    {featuredMovie.title}
+                    <EditableText contentKey="hero_card_title" fallback={featuredMovie?.title || "فيلم مميز"} />
                   </h3>
-                  <p className="text-muted-foreground">{featuredMovie.year} • {featuredMovie.director}</p>
+                  <p className="text-muted-foreground">
+                    <EditableText contentKey="hero_card_subtitle" fallback={featuredMovie ? `${featuredMovie.year} • ${featuredMovie.director}` : ""} />
+                  </p>
                 </div>
               </div>
 
