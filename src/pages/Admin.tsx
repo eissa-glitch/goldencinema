@@ -4,12 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Film, Users, LogOut, Shield, Newspaper, FileText } from "lucide-react";
+import { Film, Users, LogOut, Shield, Newspaper, FileText, Settings } from "lucide-react";
 import { toast } from "sonner";
 import AdminMovies from "@/components/admin/AdminMovies";
 import AdminArtists from "@/components/admin/AdminArtists";
 import NewsTickerManager from "@/components/admin/NewsTickerManager";
 import ContentManager from "@/components/admin/ContentManager";
+import ApiSettingsManager from "@/components/admin/ApiSettingsManager";
 
 const AUTHORIZED_EMAIL = "michaelmounir396@gmail.com";
 
@@ -84,7 +85,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="movies" className="flex items-center gap-2">
               <Film className="h-4 w-4" />
               الأفلام
@@ -100,6 +101,10 @@ const Admin = () => {
             <TabsTrigger value="content" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               المحتوى
+            </TabsTrigger>
+            <TabsTrigger value="api" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              إعدادات API
             </TabsTrigger>
           </TabsList>
 
@@ -117,6 +122,10 @@ const Admin = () => {
 
           <TabsContent value="content">
             <ContentManager />
+          </TabsContent>
+
+          <TabsContent value="api">
+            <ApiSettingsManager />
           </TabsContent>
         </Tabs>
       </main>
