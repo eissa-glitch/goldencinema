@@ -186,9 +186,9 @@ const ApiSettingsManager = () => {
                 <div key={setting.key} className="flex items-center gap-3">
                   <div className="flex items-center gap-2 min-w-[100px]">
                     {setting.isSecret ? (
-                      <Key className="h-4 w-4 text-amber-500" />
+                      <Key className="h-4 w-4 text-primary" />
                     ) : (
-                      <Globe className="h-4 w-4 text-blue-500" />
+                      <Globe className="h-4 w-4 text-accent-foreground" />
                     )}
                     <span className="text-sm text-muted-foreground">
                       {setting.isSecret ? "مفتاح" : "رابط"}
