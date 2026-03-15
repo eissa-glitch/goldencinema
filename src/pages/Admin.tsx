@@ -10,6 +10,7 @@ import AdminMovies from "@/components/admin/AdminMovies";
 import AdminArtists from "@/components/admin/AdminArtists";
 import NewsTickerManager from "@/components/admin/NewsTickerManager";
 import ContentManager from "@/components/admin/ContentManager";
+import ApiSettingsManager from "@/components/admin/ApiSettingsManager";
 
 const AUTHORIZED_EMAIL = "michaelmounir396@gmail.com";
 
