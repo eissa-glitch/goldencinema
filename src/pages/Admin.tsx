@@ -123,6 +123,10 @@ const Admin = () => {
           <TabsContent value="content">
             <ContentManager />
           </TabsContent>
+
+          <TabsContent value="api">
+            <ApiSettingsManager />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
