@@ -4,13 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Film, Users, LogOut, Shield, Newspaper, FileText, Settings } from "lucide-react";
+import { Film, Users, LogOut, Shield, Newspaper, FileText, Settings, Database } from "lucide-react";
 import { toast } from "sonner";
 import AdminMovies from "@/components/admin/AdminMovies";
 import AdminArtists from "@/components/admin/AdminArtists";
 import NewsTickerManager from "@/components/admin/NewsTickerManager";
 import ContentManager from "@/components/admin/ContentManager";
 import ApiSettingsManager from "@/components/admin/ApiSettingsManager";
+import DatabaseExport from "@/components/admin/DatabaseExport";
 
 const AUTHORIZED_EMAIL = "michaelmounir396@gmail.com";
 
@@ -85,7 +86,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6">
             <TabsTrigger value="movies" className="flex items-center gap-2">
               <Film className="h-4 w-4" />
               الأفلام
@@ -105,6 +106,10 @@ const Admin = () => {
             <TabsTrigger value="api" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               إعدادات API
+            </TabsTrigger>
+            <TabsTrigger value="export" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              تصدير البيانات
             </TabsTrigger>
           </TabsList>
 
@@ -126,6 +131,10 @@ const Admin = () => {
 
           <TabsContent value="api">
             <ApiSettingsManager />
+          </TabsContent>
+
+          <TabsContent value="export">
+            <DatabaseExport />
           </TabsContent>
         </Tabs>
       </main>
