@@ -107,6 +107,10 @@ const Admin = () => {
               <Settings className="h-4 w-4" />
               إعدادات API
             </TabsTrigger>
+            <TabsTrigger value="export" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              تصدير البيانات
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="movies">
