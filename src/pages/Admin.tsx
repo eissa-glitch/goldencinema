@@ -132,6 +132,10 @@ const Admin = () => {
           <TabsContent value="api">
             <ApiSettingsManager />
           </TabsContent>
+
+          <TabsContent value="export">
+            <DatabaseExport />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
