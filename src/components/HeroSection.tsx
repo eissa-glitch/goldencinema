@@ -37,11 +37,11 @@ const HeroSection = () => {
     }
   };
 
-  const displayImage = heroImage || featuredMovie?.poster || placeholderMovie;
-  const displayTitle = heroCardTitle || featuredMovie?.title || "";
-  const displaySubtitle = heroCardSubtitle || (featuredMovie ? `${featuredMovie.year} • ${featuredMovie.director}` : "");
+  const displayImage = heroImage || placeholderMovie;
+  const displayTitle = heroCardTitle || "فيلم مميز";
+  const displaySubtitle = heroCardSubtitle || "";
 
-  if (isLoading || !featuredMovie) {
+  if (isLoading) {
     return (
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0">
