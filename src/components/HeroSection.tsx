@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Play, Calendar, Star, Sparkles, ImageIcon } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
+import ImageUploader from "./admin/ImageUploader";
 import heroCinemaImage from "@/assets/hero-cinema.jpg";
 import placeholderMovie from "@/assets/placeholder-movie.jpg";
 import VideoPlayer from "./VideoPlayer";
@@ -201,7 +202,23 @@ const HeroSection = () => {
 
                 {/* Admin Image Edit Panel */}
                 {isAdmin && showImageEdit && (
-                  <div className="absolute inset-0 z-30 bg-background/95 p-4 flex flex-col gap-3 justify-center">
+                  <div className="absolute inset-0 z-30 bg-background/95 p-4 flex flex-col gap-3 justify-center overflow-y-auto">
+                    <label className="text-sm text-muted-foreground font-medium">رفع صورة</label>
+                    <ImageUploader
+                      currentImage={heroImage || undefined}
+                      folder="hero"
+                      onUpload={(url) => {
+                        if (url) {
+                          saveContent("hero_card_image", url);
+                          setShowImageEdit(false);
+                        }
+                      }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-muted-foreground/20" />
+                      <span className="text-xs text-muted-foreground">أو</span>
+                      <div className="flex-1 h-px bg-muted-foreground/20" />
+                    </div>
                     <label className="text-sm text-muted-foreground">رابط الصورة</label>
                     <input
                       value={imageInput}
@@ -219,7 +236,7 @@ const HeroSection = () => {
                       }}
                       className="bg-gold text-background px-4 py-2 rounded text-sm font-medium"
                     >
-                      حفظ
+                      حفظ الرابط
                     </button>
                   </div>
                 )}
