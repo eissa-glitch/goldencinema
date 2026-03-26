@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Play, Calendar, Star, Sparkles, ImageIcon } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
+import ImageUploader from "./admin/ImageUploader";
 import heroCinemaImage from "@/assets/hero-cinema.jpg";
 import placeholderMovie from "@/assets/placeholder-movie.jpg";
 import VideoPlayer from "./VideoPlayer";
