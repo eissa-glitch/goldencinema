@@ -87,7 +87,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-4xl grid-cols-6">
+          <TabsList className="grid w-full max-w-5xl grid-cols-7">
             <TabsTrigger value="movies" className="flex items-center gap-2">
               <Film className="h-4 w-4" />
               الأفلام
@@ -95,6 +95,10 @@ const Admin = () => {
             <TabsTrigger value="artists" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               الفنانين
+            </TabsTrigger>
+            <TabsTrigger value="members" className="flex items-center gap-2">
+              <UserCog className="h-4 w-4" />
+              الأعضاء
             </TabsTrigger>
             <TabsTrigger value="news" className="flex items-center gap-2">
               <Newspaper className="h-4 w-4" />
