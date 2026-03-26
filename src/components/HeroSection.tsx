@@ -255,15 +255,6 @@ const HeroSection = () => {
                   <Sparkles className="w-5 h-5 text-gold animate-sparkle" style={{ animationDelay: "1s" }} />
                 </div>
                 
-                {/* Movie Info Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/90 to-transparent">
-                  <h3 className="text-2xl font-amiri font-bold text-foreground mb-2">
-                    <EditableText contentKey="hero_card_title" fallback={featuredMovie?.title || "فيلم مميز"} />
-                  </h3>
-                  <p className="text-muted-foreground">
-                    <EditableText contentKey="hero_card_subtitle" fallback={featuredMovie ? `${featuredMovie.year} • ${featuredMovie.director}` : ""} />
-                  </p>
-                </div>
               </div>
 
               {/* Decorative Elements with Animation */}
