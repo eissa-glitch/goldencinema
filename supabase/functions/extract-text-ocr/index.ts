@@ -14,7 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    // Check authorization
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -25,6 +24,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
@@ -39,7 +39,6 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is the authorized admin
     if (user.email !== AUTHORIZED_EMAIL) {
       return new Response(
         JSON.stringify({ error: "غير مصرح لك باستخدام هذه الخاصية" }),
@@ -56,17 +55,33 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    // Read API settings from site_content using service role (bypasses RLS)
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: apiSettings } = await adminClient
+      .from("site_content")
+      .select("content_key, content_value")
+      .in("content_key", ["api_url_ocr", "api_key_ocr"]);
+
+    const settingsMap: Record<string, string> = {};
+    apiSettings?.forEach((s: any) => {
+      settingsMap[s.content_key] = s.content_value;
+    });
+
+    // Use custom API settings if available, otherwise fall back to Lovable AI Gateway
+    const apiUrl = settingsMap["api_url_ocr"] || "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const apiKey = settingsMap["api_key_ocr"] || Deno.env.get("LOVABLE_API_KEY");
+
+    if (!apiKey) {
+      throw new Error("لم يتم تكوين مفتاح API للـ OCR. أضفه من إعدادات API في لوحة التحكم.");
     }
 
     console.log("Extracting text from image:", imageUrl, "by user:", user.email);
+    console.log("Using API URL:", apiUrl);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -93,9 +108,7 @@ serve(async (req) => {
               },
               {
                 type: "image_url",
-                image_url: {
-                  url: imageUrl
-                }
+                image_url: { url: imageUrl }
               }
             ]
           }
@@ -115,7 +128,7 @@ serve(async (req) => {
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "يرجى إضافة رصيد إلى حساب Lovable AI" }),
+          JSON.stringify({ error: "يرجى إضافة رصيد إلى حساب AI" }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -129,10 +142,7 @@ serve(async (req) => {
     console.log("Text extracted successfully");
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        text: extractedText 
-      }),
+      JSON.stringify({ success: true, text: extractedText }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
