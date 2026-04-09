@@ -18,7 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pencil, Plus, Trash2, Save, FileText, Video, ImageIcon } from "lucide-react";
+import { Pencil, Plus, Trash2, Save, FileText, Video, ImageIcon, Music } from "lucide-react";
 import { 
   useSiteContent, 
   useUpdateContent, 
@@ -46,10 +46,13 @@ const ContentManager = () => {
   // Quick edit states
   const videoUrl = data?.map["video_url"] || "";
   const heroImage = data?.map["hero_card_image"] || "";
+  const musicUrl = data?.map["music_url"] || "";
   const [videoInput, setVideoInput] = useState("");
   const [heroImageInput, setHeroImageInput] = useState("");
+  const [musicInput, setMusicInput] = useState("");
   const [videoEditing, setVideoEditing] = useState(false);
   const [heroEditing, setHeroEditing] = useState(false);
+  const [musicEditing, setMusicEditing] = useState(false);
 
   const saveQuickContent = (key: string, value: string, description: string) => {
     if (data?.map[key] !== undefined) {
@@ -106,7 +109,7 @@ const ContentManager = () => {
   return (
     <div className="space-y-6">
       {/* Quick Settings Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Video URL Card */}
         <Card>
           <CardHeader className="pb-3">
@@ -207,6 +210,56 @@ const ContentManager = () => {
                   <Button variant="ghost" size="sm" onClick={() => setHeroEditing(false)}>
                     إلغاء
                   </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Music URL Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Music className="h-5 w-5 text-primary" />
+              رابط الموسيقى الخلفية
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {musicUrl && !musicEditing ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground break-all" dir="ltr">{musicUrl}</p>
+                <Button variant="outline" size="sm" onClick={() => { setMusicInput(musicUrl); setMusicEditing(true); }}>
+                  <Pencil className="ml-2 h-4 w-4" />
+                  تعديل
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Input
+                  value={musicInput}
+                  onChange={(e) => setMusicInput(e.target.value)}
+                  placeholder="https://example.com/music.mp3"
+                  dir="ltr"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (musicInput.trim()) {
+                        saveQuickContent("music_url", musicInput.trim(), "رابط الموسيقى الخلفية");
+                        setMusicEditing(false);
+                      }
+                    }}
+                    disabled={!musicInput.trim()}
+                  >
+                    <Save className="ml-2 h-4 w-4" />
+                    حفظ
+                  </Button>
+                  {musicEditing && (
+                    <Button variant="ghost" size="sm" onClick={() => setMusicEditing(false)}>
+                      إلغاء
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
