@@ -18,11 +18,12 @@ const TABLES = [
   { name: "news_ticker", label: "شريط الأخبار" },
   { name: "site_content", label: "محتوى الموقع" },
   { name: "user_roles", label: "أدوار المستخدمين" },
+  { name: "members", label: "الأعضاء (بيانات الحسابات)" },
 ] as const;
 
 type TableName = typeof TABLES[number]["name"];
 
-const COLUMN_MAP: Record<TableName, string[]> = {
+const COLUMN_MAP: Partial<Record<TableName, string[]>> = {
   movies: ["id", "title", "year", "director", "duration", "rating", "synopsis", "poster", "genre", "created_at", "updated_at"],
   artists: ["id", "name", "image", "biography", "birth_year", "death_year", "role", "created_at", "updated_at"],
   movie_artists: ["id", "movie_id", "artist_id", "role"],
@@ -76,7 +77,7 @@ const DatabaseExport = () => {
     }
 
     setIsExporting(true);
-    const sqlParts: string[] = [];
+  const sqlParts: string[] = [];
 
     sqlParts.push("-- ===========================================");
     sqlParts.push("-- تصدير قاعدة بيانات الأرشيف السينمائي");
@@ -85,10 +86,11 @@ const DatabaseExport = () => {
 
     try {
       for (const table of TABLES) {
-        if (!selectedTables.has(table.name)) continue;
+        if (!selectedTables.has(table.name) || table.name === "members") continue;
 
+        const tableName = table.name;
         const { data, error } = await supabase
-          .from(table.name)
+          .from(tableName as any)
           .select("*");
 
         if (error) {
@@ -97,7 +99,7 @@ const DatabaseExport = () => {
           continue;
         }
 
-        const columns = COLUMN_MAP[table.name];
+        const columns = COLUMN_MAP[tableName]!;
 
         sqlParts.push(`-- -------------------------------------------`);
         sqlParts.push(`-- جدول: ${table.name} (${table.label})`);
@@ -121,6 +123,31 @@ const DatabaseExport = () => {
         }
 
         sqlParts.push(""); // empty line between tables
+      }
+
+      // Export members (auth.users) if selected
+      if (selectedTables.has("members")) {
+        try {
+          const { data: usersData } = await supabase.functions.invoke("manage-users", {
+            body: { action: "list" },
+          });
+          const users = usersData?.users || [];
+          sqlParts.push(`-- -------------------------------------------`);
+          sqlParts.push(`-- الأعضاء (auth.users) - للمرجعية فقط`);
+          sqlParts.push(`-- عدد الأعضاء: ${users.length}`);
+          sqlParts.push(`-- -------------------------------------------`);
+          if (users.length > 0) {
+            sqlParts.push(`-- id | email | role | created_at | last_sign_in_at`);
+            for (const u of users) {
+              sqlParts.push(`-- ${u.id} | ${u.email} | ${u.role || 'user'} | ${u.created_at} | ${u.last_sign_in_at || 'N/A'}`);
+            }
+          } else {
+            sqlParts.push(`-- لا يوجد أعضاء`);
+          }
+          sqlParts.push("");
+        } catch (e) {
+          sqlParts.push(`-- خطأ في تصدير الأعضاء\n`);
+        }
       }
 
       const sqlContent = sqlParts.join("\n");
