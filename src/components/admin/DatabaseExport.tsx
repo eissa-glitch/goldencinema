@@ -88,8 +88,9 @@ const DatabaseExport = () => {
       for (const table of TABLES) {
         if (!selectedTables.has(table.name) || table.name === "members") continue;
 
+        const tableName = table.name as keyof typeof COLUMN_MAP;
         const { data, error } = await supabase
-          .from(table.name)
+          .from(tableName)
           .select("*");
 
         if (error) {
@@ -98,7 +99,7 @@ const DatabaseExport = () => {
           continue;
         }
 
-        const columns = COLUMN_MAP[table.name];
+        const columns = COLUMN_MAP[tableName]!;
 
         sqlParts.push(`-- -------------------------------------------`);
         sqlParts.push(`-- جدول: ${table.name} (${table.label})`);
