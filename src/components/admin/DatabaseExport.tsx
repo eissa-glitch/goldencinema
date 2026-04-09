@@ -23,7 +23,7 @@ const TABLES = [
 
 type TableName = typeof TABLES[number]["name"];
 
-const COLUMN_MAP: Record<TableName, string[]> = {
+const COLUMN_MAP: Partial<Record<TableName, string[]>> = {
   movies: ["id", "title", "year", "director", "duration", "rating", "synopsis", "poster", "genre", "created_at", "updated_at"],
   artists: ["id", "name", "image", "biography", "birth_year", "death_year", "role", "created_at", "updated_at"],
   movie_artists: ["id", "movie_id", "artist_id", "role"],
