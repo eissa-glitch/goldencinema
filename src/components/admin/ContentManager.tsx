@@ -17,7 +17,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil, Plus, Trash2, Save, FileText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pencil, Plus, Trash2, Save, FileText, Video, ImageIcon } from "lucide-react";
 import { 
   useSiteContent, 
   useUpdateContent, 
@@ -25,6 +26,7 @@ import {
   useDeleteContent,
   SiteContent 
 } from "@/hooks/useSiteContent";
+import ImageUploader from "./ImageUploader";
 
 const ContentManager = () => {
   const { data, isLoading } = useSiteContent();
@@ -40,6 +42,22 @@ const ContentManager = () => {
     value: "",
     description: "",
   });
+
+  // Quick edit states
+  const videoUrl = data?.map["video_url"] || "";
+  const heroImage = data?.map["hero_card_image"] || "";
+  const [videoInput, setVideoInput] = useState("");
+  const [heroImageInput, setHeroImageInput] = useState("");
+  const [videoEditing, setVideoEditing] = useState(false);
+  const [heroEditing, setHeroEditing] = useState(false);
+
+  const saveQuickContent = (key: string, value: string, description: string) => {
+    if (data?.map[key] !== undefined) {
+      updateContent.mutate({ key, value });
+    } else {
+      createContent.mutate({ key, value, description });
+    }
+  };
 
   const handleEdit = (item: SiteContent) => {
     setEditingItem(item);
@@ -87,6 +105,116 @@ const ContentManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Quick Settings Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Video URL Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Video className="h-5 w-5 text-primary" />
+              رابط الفيديو الرئيسي
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {videoUrl && !videoEditing ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground break-all" dir="ltr">{videoUrl}</p>
+                <Button variant="outline" size="sm" onClick={() => { setVideoInput(videoUrl); setVideoEditing(true); }}>
+                  <Pencil className="ml-2 h-4 w-4" />
+                  تعديل
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Input
+                  value={videoInput}
+                  onChange={(e) => setVideoInput(e.target.value)}
+                  placeholder="https://www.youtube.com/embed/..."
+                  dir="ltr"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (videoInput.trim()) {
+                        saveQuickContent("video_url", videoInput.trim(), "رابط الفيديو الرئيسي");
+                        setVideoEditing(false);
+                      }
+                    }}
+                    disabled={!videoInput.trim()}
+                  >
+                    <Save className="ml-2 h-4 w-4" />
+                    حفظ
+                  </Button>
+                  {videoEditing && (
+                    <Button variant="ghost" size="sm" onClick={() => setVideoEditing(false)}>
+                      إلغاء
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Hero Image Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <ImageIcon className="h-5 w-5 text-primary" />
+              الصورة الرئيسية
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {heroImage && (
+              <img src={heroImage} alt="الصورة الرئيسية" className="w-full h-32 object-cover rounded-lg" />
+            )}
+            {!heroEditing ? (
+              <Button variant="outline" size="sm" onClick={() => { setHeroImageInput(heroImage); setHeroEditing(true); }}>
+                <Pencil className="ml-2 h-4 w-4" />
+                تعديل الصورة
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <ImageUploader
+                  folder="hero"
+                  onUpload={(url) => {
+                    saveQuickContent("hero_card_image", url, "صورة البطاقة الرئيسية");
+                    setHeroEditing(false);
+                  }}
+                />
+                <div className="text-sm text-muted-foreground text-center">أو أدخل رابط الصورة</div>
+                <Input
+                  value={heroImageInput}
+                  onChange={(e) => setHeroImageInput(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  dir="ltr"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (heroImageInput.trim()) {
+                        saveQuickContent("hero_card_image", heroImageInput.trim(), "صورة البطاقة الرئيسية");
+                        setHeroEditing(false);
+                      }
+                    }}
+                    disabled={!heroImageInput.trim()}
+                  >
+                    <Save className="ml-2 h-4 w-4" />
+                    حفظ الرابط
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setHeroEditing(false)}>
+                    إلغاء
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Content Table */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <FileText className="h-6 w-6 text-gold" />
