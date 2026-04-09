@@ -18,6 +18,7 @@ const TABLES = [
   { name: "news_ticker", label: "شريط الأخبار" },
   { name: "site_content", label: "محتوى الموقع" },
   { name: "user_roles", label: "أدوار المستخدمين" },
+  { name: "members", label: "الأعضاء (بيانات الحسابات)" },
 ] as const;
 
 type TableName = typeof TABLES[number]["name"];
@@ -76,7 +77,7 @@ const DatabaseExport = () => {
     }
 
     setIsExporting(true);
-    const sqlParts: string[] = [];
+  const sqlParts: string[] = [];
 
     sqlParts.push("-- ===========================================");
     sqlParts.push("-- تصدير قاعدة بيانات الأرشيف السينمائي");
@@ -121,6 +122,31 @@ const DatabaseExport = () => {
         }
 
         sqlParts.push(""); // empty line between tables
+      }
+
+      // Export members (auth.users) if selected
+      if (selectedTables.has("members")) {
+        try {
+          const { data: usersData } = await supabase.functions.invoke("manage-users", {
+            body: { action: "list" },
+          });
+          const users = usersData?.users || [];
+          sqlParts.push(`-- -------------------------------------------`);
+          sqlParts.push(`-- الأعضاء (auth.users) - للمرجعية فقط`);
+          sqlParts.push(`-- عدد الأعضاء: ${users.length}`);
+          sqlParts.push(`-- -------------------------------------------`);
+          if (users.length > 0) {
+            sqlParts.push(`-- id | email | role | created_at | last_sign_in_at`);
+            for (const u of users) {
+              sqlParts.push(`-- ${u.id} | ${u.email} | ${u.role || 'user'} | ${u.created_at} | ${u.last_sign_in_at || 'N/A'}`);
+            }
+          } else {
+            sqlParts.push(`-- لا يوجد أعضاء`);
+          }
+          sqlParts.push("");
+        } catch (e) {
+          sqlParts.push(`-- خطأ في تصدير الأعضاء\n`);
+        }
       }
 
       const sqlContent = sqlParts.join("\n");
