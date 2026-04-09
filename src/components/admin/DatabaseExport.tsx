@@ -86,7 +86,7 @@ const DatabaseExport = () => {
 
     try {
       for (const table of TABLES) {
-        if (!selectedTables.has(table.name)) continue;
+        if (!selectedTables.has(table.name) || table.name === "members") continue;
 
         const { data, error } = await supabase
           .from(table.name)
