@@ -18,7 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pencil, Plus, Trash2, Save, FileText, Video, ImageIcon } from "lucide-react";
+import { Pencil, Plus, Trash2, Save, FileText, Video, ImageIcon, Music } from "lucide-react";
 import { 
   useSiteContent, 
   useUpdateContent, 
@@ -46,10 +46,13 @@ const ContentManager = () => {
   // Quick edit states
   const videoUrl = data?.map["video_url"] || "";
   const heroImage = data?.map["hero_card_image"] || "";
+  const musicUrl = data?.map["music_url"] || "";
   const [videoInput, setVideoInput] = useState("");
   const [heroImageInput, setHeroImageInput] = useState("");
+  const [musicInput, setMusicInput] = useState("");
   const [videoEditing, setVideoEditing] = useState(false);
   const [heroEditing, setHeroEditing] = useState(false);
+  const [musicEditing, setMusicEditing] = useState(false);
 
   const saveQuickContent = (key: string, value: string, description: string) => {
     if (data?.map[key] !== undefined) {
