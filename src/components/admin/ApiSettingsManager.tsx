@@ -125,7 +125,11 @@ const ApiSettingsManager = () => {
             إضافة خدمة API جديدة
           </CardTitle>
           <CardDescription>
-            أضف رابط ومفتاح API لخدمة خارجية جديدة
+            أضف رابط ومفتاح API لخدمة خارجية جديدة.
+            <br />
+            <span className="text-xs text-primary/80 mt-1 inline-block">
+              💡 مثال: أضف خدمة باسم <strong>ocr</strong> وسيتم حفظ الإعدادات بالمفاتيح <code className="bg-muted px-1 rounded">api_url_ocr</code> و <code className="bg-muted px-1 rounded">api_key_ocr</code> وستستخدمها وظيفة الـ OCR تلقائياً بدلاً من القيم الافتراضية.
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
