@@ -1,26 +1,18 @@
 
 
-# إضافة دعم APIs إضافية لوظيفة OCR
+# إصلاح OCR لاستخراج النصوص بالعربي والإنجليزي
 
-## الوضع الحالي
-وظيفة `extract-text-ocr` تدعم:
-- OpenAI Chat Completions format (الافتراضي عبر Lovable AI)
-- Google Generative Language API (كشف تلقائي من الرابط)
+## المشكلة
+البرومبت الحالي يطلب صراحةً استخراج "النص العربي" فقط (سطر 24: `"استخرج النص العربي من هذه الصورة وصححه لغوياً:"`). هذا يجعل النموذج يتجاهل النص الإنجليزي.
 
-## الخطة: إضافة دعم لأنواع API إضافية
+## الحل
+تعديل `SYSTEM_PROMPT` و `USER_PROMPT` في `supabase/functions/extract-text-ocr/index.ts` ليشملا جميع اللغات:
 
-### 1. تعديل Edge Function (`supabase/functions/extract-text-ocr/index.ts`)
-- إضافة كشف تلقائي لنوع API بناءً على الرابط:
-  - `vision.googleapis.com` → Google Cloud Vision API
-  - `cognitiveservices.azure.com` → Azure Computer Vision
-  - `api.ocr.space` → OCR.space API
-  - أي رابط آخر → يُعامل كـ OpenAI-compatible (الوضع الحالي)
-- كل نوع يُرسل الطلب بالتنسيق المناسب للخدمة
+- **SYSTEM_PROMPT**: تغيير من "خبير في استخراج النصوص العربية" إلى "خبير في استخراج جميع النصوص بأي لغة"
+- **USER_PROMPT**: تغيير من "استخرج النص العربي" إلى "استخرج كل النص من هذه الصورة بجميع اللغات"
 
-### 2. تحديث واجهة إعدادات API (اختياري)
-- إضافة قائمة منسدلة لاختيار نوع الخدمة عند إضافة API جديد بدلاً من الكشف التلقائي فقط
+ثم إعادة نشر Edge Function.
 
-### التفاصيل التقنية
-- كل نوع API يحتاج معالجة مختلفة للصورة (base64, URL, multipart)
-- كل نوع يُرجع النتيجة بتنسيق مختلف يحتاج تحويل موحد
+## الملفات المتأثرة
+- `supabase/functions/extract-text-ocr/index.ts` (سطور 14-24)
 
