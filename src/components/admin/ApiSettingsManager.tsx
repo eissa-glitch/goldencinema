@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Eye, EyeOff, Save, Globe, Key } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,6 +15,18 @@ interface ApiSetting {
   isSecret: boolean;
 }
 
+const OCR_PROVIDERS = [
+  { value: "custom", label: "رابط مخصص", placeholder: "https://api.example.com/v1" },
+  { value: "lovable", label: "Lovable AI (افتراضي)", url: "" },
+  { value: "google-genai", label: "Google Gemini", url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" },
+  { value: "google-vision", label: "Google Cloud Vision", url: "https://vision.googleapis.com/v1/images:annotate" },
+  { value: "azure", label: "Azure Computer Vision", placeholder: "https://YOUR_RESOURCE.cognitiveservices.azure.com/vision/v3.2" },
+  { value: "ocrspace", label: "OCR.space", url: "https://api.ocr.space/parse/image" },
+  { value: "openai", label: "OpenAI / متوافق", url: "https://api.openai.com/v1/chat/completions" },
+  { value: "openrouter", label: "OpenRouter", url: "https://openrouter.ai/api/v1/chat/completions" },
+  { value: "together", label: "Together AI", url: "https://api.together.xyz/v1/chat/completions" },
+];
+
 const ApiSettingsManager = () => {
   const { data: siteContent, isLoading } = useSiteContent();
   const updateContent = useUpdateContent();
@@ -21,6 +34,7 @@ const ApiSettingsManager = () => {
   const deleteContent = useDeleteContent();
 
   const [newLabel, setNewLabel] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState("custom");
   const [newUrl, setNewUrl] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
@@ -54,20 +68,23 @@ const ApiSettingsManager = () => {
     }
 
     const sanitizedLabel = newLabel.trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
-
     const urlKey = `api_url_${sanitizedLabel}`;
     const keyKey = `api_key_${sanitizedLabel}`;
 
-    // Create URL entry
-    if (newUrl.trim()) {
+    // Determine the URL from provider or custom input
+    const provider = OCR_PROVIDERS.find(p => p.value === selectedProvider);
+    const finalUrl = selectedProvider === "custom" || selectedProvider === "azure"
+      ? newUrl.trim()
+      : provider?.url || "";
+
+    if (finalUrl) {
       createContent.mutate({
         key: urlKey,
-        value: newUrl.trim(),
-        description: `${newLabel} - رابط API`,
+        value: finalUrl,
+        description: `${newLabel} - رابط API (${provider?.label || "مخصص"})`,
       });
     }
 
-    // Create API key entry
     if (newApiKey.trim()) {
       createContent.mutate({
         key: keyKey,
@@ -76,7 +93,7 @@ const ApiSettingsManager = () => {
       });
     }
 
-    if (!newUrl.trim() && !newApiKey.trim()) {
+    if (!finalUrl && !newApiKey.trim() && selectedProvider !== "lovable") {
       toast.error("يرجى إدخال رابط أو مفتاح API على الأقل");
       return;
     }
@@ -84,6 +101,7 @@ const ApiSettingsManager = () => {
     setNewLabel("");
     setNewUrl("");
     setNewApiKey("");
+    setSelectedProvider("custom");
   };
 
   const handleUpdate = (key: string, value: string) => {
@@ -143,31 +161,49 @@ const ApiSettingsManager = () => {
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                رابط API (URL)
-              </Label>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              مزود الخدمة / رابط API
+            </Label>
+            <Select value={selectedProvider} onValueChange={(val) => {
+              setSelectedProvider(val);
+              if (val !== "custom" && val !== "azure") setNewUrl("");
+            }}>
+              <SelectTrigger dir="ltr">
+                <SelectValue placeholder="اختر مزود الخدمة" />
+              </SelectTrigger>
+              <SelectContent dir="ltr">
+                {OCR_PROVIDERS.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(selectedProvider === "custom" || selectedProvider === "azure") && (
               <Input
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
-                placeholder="https://api.example.com/v1"
+                placeholder={OCR_PROVIDERS.find(p => p.value === selectedProvider)?.placeholder || "https://api.example.com/v1"}
                 dir="ltr"
+                className="mt-2"
               />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Key className="h-4 w-4" />
-                مفتاح API (Key)
-              </Label>
-              <Input
-                type="password"
-                value={newApiKey}
-                onChange={(e) => setNewApiKey(e.target.value)}
-                placeholder="sk-..."
-                dir="ltr"
-              />
-            </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Key className="h-4 w-4" />
+              مفتاح API (Key)
+            </Label>
+            <Input
+              type="password"
+              value={newApiKey}
+              onChange={(e) => setNewApiKey(e.target.value)}
+              placeholder="sk-..."
+              dir="ltr"
+            />
+          </div>
           </div>
           <Button onClick={handleAddApi} className="w-full">
             <Plus className="ml-2 h-4 w-4" />
