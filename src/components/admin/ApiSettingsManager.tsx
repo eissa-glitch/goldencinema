@@ -161,31 +161,49 @@ const ApiSettingsManager = () => {
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                رابط API (URL)
-              </Label>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              مزود الخدمة / رابط API
+            </Label>
+            <Select value={selectedProvider} onValueChange={(val) => {
+              setSelectedProvider(val);
+              if (val !== "custom" && val !== "azure") setNewUrl("");
+            }}>
+              <SelectTrigger dir="ltr">
+                <SelectValue placeholder="اختر مزود الخدمة" />
+              </SelectTrigger>
+              <SelectContent dir="ltr">
+                {OCR_PROVIDERS.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(selectedProvider === "custom" || selectedProvider === "azure") && (
               <Input
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
-                placeholder="https://api.example.com/v1"
+                placeholder={OCR_PROVIDERS.find(p => p.value === selectedProvider)?.placeholder || "https://api.example.com/v1"}
                 dir="ltr"
+                className="mt-2"
               />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Key className="h-4 w-4" />
-                مفتاح API (Key)
-              </Label>
-              <Input
-                type="password"
-                value={newApiKey}
-                onChange={(e) => setNewApiKey(e.target.value)}
-                placeholder="sk-..."
-                dir="ltr"
-              />
-            </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Key className="h-4 w-4" />
+              مفتاح API (Key)
+            </Label>
+            <Input
+              type="password"
+              value={newApiKey}
+              onChange={(e) => setNewApiKey(e.target.value)}
+              placeholder="sk-..."
+              dir="ltr"
+            />
+          </div>
           </div>
           <Button onClick={handleAddApi} className="w-full">
             <Plus className="ml-2 h-4 w-4" />
