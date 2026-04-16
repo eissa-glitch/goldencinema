@@ -67,29 +67,13 @@ serve(async (req) => {
       settingsMap[s.content_key] = s.content_value;
     });
 
-    // Use custom API settings if available, otherwise fall back to Lovable AI Gateway
-    const apiUrl = settingsMap["api_url_ocr"] || "https://ai.gateway.lovable.dev/v1/chat/completions";
-    const apiKey = settingsMap["api_key_ocr"] || Deno.env.get("LOVABLE_API_KEY");
-
-    if (!apiKey) {
-      throw new Error("لم يتم تكوين مفتاح API للـ OCR. أضفه من إعدادات API في لوحة التحكم.");
-    }
-
-    console.log("Extracting text from image:", imageUrl, "by user:", user.email);
-    console.log("Using API URL:", apiUrl);
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `أنت خبير في استخراج النصوص من الصور (OCR) وتصحيح الأخطاء اللغوية العربية.
+    const customApiUrl = settingsMap["api_url_ocr"];
+    const customApiKey = settingsMap["api_key_ocr"];
+    
+    // Determine if using Google native API or OpenAI-compatible API
+    const isGoogleNative = customApiUrl && customApiUrl.includes("generativelanguage.googleapis.com");
+    
+    const systemPrompt = `أنت خبير في استخراج النصوص من الصور (OCR) وتصحيح الأخطاء اللغوية العربية.
             
 مهمتك:
 1. استخراج كل النص الموجود في الصورة بدقة عالية
@@ -97,47 +81,150 @@ serve(async (req) => {
 3. الحفاظ على التنسيق الأصلي للنص (فقرات، عناوين)
 4. إذا لم تجد نصاً في الصورة، أرجع رسالة توضح ذلك
 
-أرجع النص المستخرج والمصحح فقط، بدون أي شرح إضافي.`
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "استخرج النص العربي من هذه الصورة وصححه لغوياً:"
-              },
-              {
-                type: "image_url",
-                image_url: { url: imageUrl }
-              }
-            ]
-          }
-        ],
-      }),
-    });
+أرجع النص المستخرج والمصحح فقط، بدون أي شرح إضافي.`;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+    const userPrompt = "استخرج النص العربي من هذه الصورة وصححه لغوياً:";
+
+    console.log("Extracting text from image:", imageUrl, "by user:", user.email);
+    console.log("Using Google Native API:", isGoogleNative);
+
+    let extractedText = "";
+
+    if (isGoogleNative && customApiKey) {
+      // Google Generative Language API (native format)
+      // Build the URL with the API key as query param
+      const apiUrlWithKey = `${customApiUrl}?key=${customApiKey}`;
       
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "تم تجاوز حد الطلبات، يرجى المحاولة لاحقاً" }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "يرجى إضافة رصيد إلى حساب AI" }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      console.log("Using Google native API URL:", customApiUrl);
+
+      const response = await fetch(apiUrlWithKey, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: `${systemPrompt}\n\n${userPrompt}` },
+                {
+                  inline_data: undefined,
+                  // Use file_data for URL-based images
+                  file_data: undefined,
+                }
+              ]
+            }
+          ],
+          // For URL-based images, we need to fetch the image first and send as base64
+        }),
+      });
+
+      // Actually, Google's native API with generateContent needs inline_data (base64)
+      // or we can use the newer format. Let's fetch the image and convert to base64.
       
-      throw new Error(`AI gateway error: ${response.status}`);
+      // Re-do: fetch image, convert to base64, send to Google
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error("فشل في تحميل الصورة");
+      }
+      const imageBuffer = await imageResponse.arrayBuffer();
+      const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+      const mimeType = imageResponse.headers.get("content-type") || "image/png";
+
+      const googleResponse = await fetch(apiUrlWithKey, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: `${systemPrompt}\n\n${userPrompt}` },
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Image,
+                  }
+                }
+              ]
+            }
+          ],
+        }),
+      });
+
+      if (!googleResponse.ok) {
+        const errorText = await googleResponse.text();
+        console.error("Google API error:", googleResponse.status, errorText);
+        
+        if (googleResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "تم تجاوز حد الطلبات، يرجى المحاولة لاحقاً" }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        throw new Error(`Google API error: ${googleResponse.status} - ${errorText}`);
+      }
+
+      const googleData = await googleResponse.json();
+      extractedText = googleData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    } else {
+      // OpenAI-compatible API (default: Lovable AI Gateway)
+      const apiUrl = customApiUrl || "https://ai.gateway.lovable.dev/v1/chat/completions";
+      const apiKey = customApiKey || Deno.env.get("LOVABLE_API_KEY");
+
+      if (!apiKey) {
+        throw new Error("لم يتم تكوين مفتاح API للـ OCR. أضفه من إعدادات API في لوحة التحكم.");
+      }
+
+      console.log("Using OpenAI-compatible API URL:", apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: userPrompt },
+                { type: "image_url", image_url: { url: imageUrl } }
+              ]
+            }
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("AI gateway error:", response.status, errorText);
+        
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "تم تجاوز حد الطلبات، يرجى المحاولة لاحقاً" }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ error: "يرجى إضافة رصيد إلى حساب AI" }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        throw new Error(`AI gateway error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      extractedText = data.choices?.[0]?.message?.content || "";
     }
-
-    const data = await response.json();
-    const extractedText = data.choices?.[0]?.message?.content || "";
 
     console.log("Text extracted successfully");
 
