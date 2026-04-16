@@ -102,37 +102,20 @@ serve(async (req) => {
 
     if (isGoogleNative && customApiKey) {
       // Google Generative Language API (native format)
-      // Build the URL with the API key as query param
-      const apiUrlWithKey = `${customApiUrl}?key=${customApiKey}`;
+      const apiUrlWithKey = `${googleApiUrl}?key=${customApiKey}`;
       
-      console.log("Using Google native API URL:", customApiUrl);
+      console.log("Using Google native API URL:", googleApiUrl);
 
-      const response = await fetch(apiUrlWithKey, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: `${systemPrompt}\n\n${userPrompt}` },
-                {
-                  inline_data: undefined,
-                  // Use file_data for URL-based images
-                  file_data: undefined,
-                }
-              ]
-            }
-          ],
-          // For URL-based images, we need to fetch the image first and send as base64
-        }),
-      });
+      // Fetch image and convert to base64 for Google's API
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error("فشل في تحميل الصورة");
+      }
+      const imageBuffer = await imageResponse.arrayBuffer();
+      const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+      const mimeType = imageResponse.headers.get("content-type") || "image/png";
 
-      // Actually, Google's native API with generateContent needs inline_data (base64)
-      // or we can use the newer format. Let's fetch the image and convert to base64.
-      
-      // Re-do: fetch image, convert to base64, send to Google
+      const googleResponse = await fetch(apiUrlWithKey, {
       const imageResponse = await fetch(imageUrl);
       if (!imageResponse.ok) {
         throw new Error("فشل في تحميل الصورة");
