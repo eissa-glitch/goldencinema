@@ -15,6 +15,18 @@ interface ApiSetting {
   isSecret: boolean;
 }
 
+const OCR_PROVIDERS = [
+  { value: "custom", label: "رابط مخصص", placeholder: "https://api.example.com/v1" },
+  { value: "lovable", label: "Lovable AI (افتراضي)", url: "" },
+  { value: "google-genai", label: "Google Gemini", url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" },
+  { value: "google-vision", label: "Google Cloud Vision", url: "https://vision.googleapis.com/v1/images:annotate" },
+  { value: "azure", label: "Azure Computer Vision", placeholder: "https://YOUR_RESOURCE.cognitiveservices.azure.com/vision/v3.2" },
+  { value: "ocrspace", label: "OCR.space", url: "https://api.ocr.space/parse/image" },
+  { value: "openai", label: "OpenAI / متوافق", url: "https://api.openai.com/v1/chat/completions" },
+  { value: "openrouter", label: "OpenRouter", url: "https://openrouter.ai/api/v1/chat/completions" },
+  { value: "together", label: "Together AI", url: "https://api.together.xyz/v1/chat/completions" },
+];
+
 const ApiSettingsManager = () => {
   const { data: siteContent, isLoading } = useSiteContent();
   const updateContent = useUpdateContent();
