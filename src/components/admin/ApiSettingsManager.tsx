@@ -34,6 +34,7 @@ const ApiSettingsManager = () => {
   const deleteContent = useDeleteContent();
 
   const [newLabel, setNewLabel] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState("custom");
   const [newUrl, setNewUrl] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
