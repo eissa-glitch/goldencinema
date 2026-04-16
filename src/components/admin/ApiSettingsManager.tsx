@@ -68,20 +68,23 @@ const ApiSettingsManager = () => {
     }
 
     const sanitizedLabel = newLabel.trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
-
     const urlKey = `api_url_${sanitizedLabel}`;
     const keyKey = `api_key_${sanitizedLabel}`;
 
-    // Create URL entry
-    if (newUrl.trim()) {
+    // Determine the URL from provider or custom input
+    const provider = OCR_PROVIDERS.find(p => p.value === selectedProvider);
+    const finalUrl = selectedProvider === "custom" || selectedProvider === "azure"
+      ? newUrl.trim()
+      : provider?.url || "";
+
+    if (finalUrl) {
       createContent.mutate({
         key: urlKey,
-        value: newUrl.trim(),
-        description: `${newLabel} - رابط API`,
+        value: finalUrl,
+        description: `${newLabel} - رابط API (${provider?.label || "مخصص"})`,
       });
     }
 
-    // Create API key entry
     if (newApiKey.trim()) {
       createContent.mutate({
         key: keyKey,
@@ -90,7 +93,7 @@ const ApiSettingsManager = () => {
       });
     }
 
-    if (!newUrl.trim() && !newApiKey.trim()) {
+    if (!finalUrl && !newApiKey.trim() && selectedProvider !== "lovable") {
       toast.error("يرجى إدخال رابط أو مفتاح API على الأقل");
       return;
     }
@@ -98,6 +101,7 @@ const ApiSettingsManager = () => {
     setNewLabel("");
     setNewUrl("");
     setNewApiKey("");
+    setSelectedProvider("custom");
   };
 
   const handleUpdate = (key: string, value: string) => {
