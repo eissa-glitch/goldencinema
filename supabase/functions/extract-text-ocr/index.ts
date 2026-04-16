@@ -85,6 +85,16 @@ serve(async (req) => {
 
     const userPrompt = "استخرج النص العربي من هذه الصورة وصححه لغوياً:";
 
+    // Auto-fix deprecated model names in Google API URL
+    let googleApiUrl = customApiUrl || "";
+    if (isGoogleNative) {
+      // Replace deprecated models with gemini-2.0-flash (supports vision)
+      googleApiUrl = googleApiUrl.replace(
+        /models\/[^:]+:/,
+        "models/gemini-2.0-flash:"
+      );
+    }
+
     console.log("Extracting text from image:", imageUrl, "by user:", user.email);
     console.log("Using Google Native API:", isGoogleNative);
 
