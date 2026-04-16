@@ -25,13 +25,13 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     });
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "جلسة غير صالحة، يرجى تسجيل الدخول مجدداً" }),
@@ -69,12 +69,11 @@ serve(async (req) => {
 
     const customApiUrl = settingsMap["api_url_ocr"];
     const customApiKey = settingsMap["api_key_ocr"];
-    
-    // Determine if using Google native API or OpenAI-compatible API
+
     const isGoogleNative = customApiUrl && customApiUrl.includes("generativelanguage.googleapis.com");
-    
+
     const systemPrompt = `أنت خبير في استخراج النصوص من الصور (OCR) وتصحيح الأخطاء اللغوية العربية.
-            
+
 مهمتك:
 1. استخراج كل النص الموجود في الصورة بدقة عالية
 2. تصحيح أي أخطاء إملائية أو نحوية في النص المستخرج
@@ -85,28 +84,20 @@ serve(async (req) => {
 
     const userPrompt = "استخرج النص العربي من هذه الصورة وصححه لغوياً:";
 
-    // Auto-fix deprecated model names in Google API URL
-    let googleApiUrl = customApiUrl || "";
-    if (isGoogleNative) {
-      // Replace deprecated models with gemini-2.0-flash (supports vision)
-      googleApiUrl = googleApiUrl.replace(
-        /models\/[^:]+:/,
-        "models/gemini-2.0-flash:"
-      );
-    }
-
     console.log("Extracting text from image:", imageUrl, "by user:", user.email);
-    console.log("Using Google Native API:", isGoogleNative);
 
     let extractedText = "";
 
     if (isGoogleNative && customApiKey) {
-      // Google Generative Language API (native format)
-      const apiUrlWithKey = `${googleApiUrl}?key=${customApiKey}`;
-      
+      // Auto-fix deprecated model names - use gemini-2.0-flash (supports vision)
+      let googleApiUrl = customApiUrl.replace(
+        /models\/[^:]+:/,
+        "models/gemini-2.0-flash:"
+      );
+
       console.log("Using Google native API URL:", googleApiUrl);
 
-      // Fetch image and convert to base64 for Google's API
+      // Fetch image and convert to base64
       const imageResponse = await fetch(imageUrl);
       if (!imageResponse.ok) {
         throw new Error("فشل في تحميل الصورة");
@@ -115,48 +106,32 @@ serve(async (req) => {
       const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
       const mimeType = imageResponse.headers.get("content-type") || "image/png";
 
-      const googleResponse = await fetch(apiUrlWithKey, {
-      const imageResponse = await fetch(imageUrl);
-      if (!imageResponse.ok) {
-        throw new Error("فشل في تحميل الصورة");
-      }
-      const imageBuffer = await imageResponse.arrayBuffer();
-      const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
-      const mimeType = imageResponse.headers.get("content-type") || "image/png";
+      const apiUrlWithKey = `${googleApiUrl}?key=${customApiKey}`;
 
       const googleResponse = await fetch(apiUrlWithKey, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: `${systemPrompt}\n\n${userPrompt}` },
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: base64Image,
-                  }
-                }
-              ]
-            }
-          ],
+          contents: [{
+            parts: [
+              { text: `${systemPrompt}\n\n${userPrompt}` },
+              { inline_data: { mime_type: mimeType, data: base64Image } }
+            ]
+          }],
         }),
       });
 
       if (!googleResponse.ok) {
         const errorText = await googleResponse.text();
         console.error("Google API error:", googleResponse.status, errorText);
-        
+
         if (googleResponse.status === 429) {
           return new Response(
             JSON.stringify({ error: "تم تجاوز حد الطلبات، يرجى المحاولة لاحقاً" }),
             { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        
+
         throw new Error(`Google API error: ${googleResponse.status} - ${errorText}`);
       }
 
@@ -198,7 +173,7 @@ serve(async (req) => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("AI gateway error:", response.status, errorText);
-        
+
         if (response.status === 429) {
           return new Response(
             JSON.stringify({ error: "تم تجاوز حد الطلبات، يرجى المحاولة لاحقاً" }),
@@ -211,7 +186,7 @@ serve(async (req) => {
             { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        
+
         throw new Error(`AI gateway error: ${response.status}`);
       }
 
@@ -228,8 +203,8 @@ serve(async (req) => {
   } catch (error) {
     console.error("OCR error:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Failed to extract text" 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Failed to extract text"
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
