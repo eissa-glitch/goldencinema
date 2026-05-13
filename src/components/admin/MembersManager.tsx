@@ -82,6 +82,16 @@ const MembersManager = () => {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const confirmUserMutation = useMutation({
+    mutationFn: (userId: string) =>
+      callManageUsers("confirm_user", { userId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      toast.success("تم تفعيل العضو");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const handleCreateUser = () => {
     if (!newEmail || !newPassword) {
       toast.error("البريد الإلكتروني وكلمة المرور مطلوبان");
