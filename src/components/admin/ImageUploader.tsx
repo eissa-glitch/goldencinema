@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/imageCompression";
 
 interface ImageUploaderProps {
   onUpload: (url: string) => void;
@@ -18,24 +19,40 @@ const ImageUploader = ({ onUpload, currentImage, folder = "general", className }
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
 
     // Validate file type
-    if (!file.type.startsWith("image/")) {
+    if (!original.type.startsWith("image/")) {
       toast.error("يرجى اختيار ملف صورة صالح");
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("حجم الصورة يجب أن يكون أقل من 5 ميجابايت");
+    // Validate file size (max 10MB before compression)
+    if (original.size > 10 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب أن يكون أقل من 10 ميجابايت");
       return;
     }
 
     setIsUploading(true);
-    
+
     try {
+      // Compress image client-side (resize + WebP) to save storage & bandwidth
+      let file = original;
+      try {
+        file = await compressImage(original, {
+          maxDimension: 1920,
+          quality: 0.82,
+          mimeType: "image/webp",
+        });
+        const savedKb = Math.max(0, Math.round((original.size - file.size) / 1024));
+        if (savedKb > 50) {
+          toast.success(`تم ضغط الصورة وتوفير ${savedKb} كيلوبايت`);
+        }
+      } catch (err) {
+        console.warn("Image compression failed, uploading original", err);
+      }
+
       // Generate unique filename
       const fileExt = file.name.split(".").pop();
       const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -44,8 +61,9 @@ const ImageUploader = ({ onUpload, currentImage, folder = "general", className }
       const { data, error } = await supabase.storage
         .from("media")
         .upload(fileName, file, {
-          cacheControl: "3600",
+          cacheControl: "31536000",
           upsert: false,
+          contentType: file.type,
         });
 
       if (error) throw error;
@@ -133,7 +151,7 @@ const ImageUploader = ({ onUpload, currentImage, folder = "general", className }
             <>
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">اضغط لرفع صورة</span>
-              <span className="text-xs text-muted-foreground/70">أقصى حجم: 5MB</span>
+              <span className="text-xs text-muted-foreground/70">سيتم ضغطها تلقائياً (أقصى 10MB)</span>
             </>
           )}
         </button>
