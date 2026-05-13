@@ -161,6 +161,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "confirm_user") {
+      const { userId } = params;
+      if (!userId) throw new Error("userId required");
+
+      const { error } = await adminClient.auth.admin.updateUserById(userId, {
+        email_confirm: true,
+      });
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Invalid action" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
