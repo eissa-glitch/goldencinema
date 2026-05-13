@@ -232,30 +232,44 @@ const MembersManager = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                      {!u.email_confirmed_at && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-green-600 hover:text-green-700"
+                          onClick={() => confirmUserMutation.mutate(u.id)}
+                          disabled={confirmUserMutation.isPending}
+                          title="تفعيل العضو"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent dir="rtl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>حذف العضو</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            هل أنت متأكد من حذف {u.email}؟ لا يمكن التراجع عن هذا الإجراء.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="flex-row-reverse gap-2">
-                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteUserMutation.mutate(u.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            حذف
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent dir="rtl">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>حذف العضو</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              هل أنت متأكد من حذف {u.email}؟ لا يمكن التراجع عن هذا الإجراء.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter className="flex-row-reverse gap-2">
+                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteUserMutation.mutate(u.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              حذف
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
