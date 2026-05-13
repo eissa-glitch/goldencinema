@@ -151,7 +151,7 @@ const ImageUploader = ({ onUpload, currentImage, folder = "general", className }
             <>
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">اضغط لرفع صورة</span>
-              <span className="text-xs text-muted-foreground/70">أقصى حجم: 5MB</span>
+              <span className="text-xs text-muted-foreground/70">سيتم ضغطها تلقائياً (أقصى 10MB)</span>
             </>
           )}
         </button>
