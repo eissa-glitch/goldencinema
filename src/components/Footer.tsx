@@ -30,6 +30,7 @@ const Footer = () => {
                 { path: "/movies", label: "الأفلام" },
                 { path: "/artists", label: "الفنانون" },
                 { path: "/years", label: "السنوات" },
+                { path: "/pricing", label: "الباقات" },
               ].map((link) => (
                 <li key={link.path}>
                   <Link
