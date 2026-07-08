@@ -238,6 +238,27 @@ export type Database = {
           },
         ]
       }
+      movie_views: {
+        Row: {
+          id: string
+          movie_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          movie_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          movie_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       movies: {
         Row: {
           created_at: string
@@ -337,6 +358,51 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          can_access_movies: boolean
+          created_at: string
+          currency: string
+          description: string | null
+          features: Json
+          id: string
+          is_active: boolean
+          max_views_per_month: number | null
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          can_access_movies?: boolean
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          max_views_per_month?: number | null
+          name: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          can_access_movies?: boolean
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          max_views_per_month?: number | null
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -358,11 +424,72 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          notes: string | null
+          plan_id: string
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_id: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_id?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_user_view_movie: { Args: { _user_id: string }; Returns: boolean }
+      get_monthly_views_count: { Args: { _user_id: string }; Returns: number }
+      get_user_active_plan: {
+        Args: { _user_id: string }
+        Returns: {
+          can_access_movies: boolean
+          expires_at: string
+          features: Json
+          max_views_per_month: number
+          plan_id: string
+          plan_name: string
+          price: number
+          started_at: string
+          status: string
+          subscription_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
