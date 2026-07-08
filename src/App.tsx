@@ -11,6 +11,7 @@ import MovieDetail from "./pages/MovieDetail";
 import ArtistDetail from "./pages/ArtistDetail";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import VoiceAssistant from "./components/VoiceAssistant";
 import BackgroundMusic from "./components/BackgroundMusic";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/artist/:id" element={<ArtistDetail />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <VoiceAssistant />
