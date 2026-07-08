@@ -4,10 +4,11 @@ import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
 import MovieCard from "@/components/MovieCard";
 import ArticlesSection from "@/components/ArticlesSection";
+import SubscriptionGuard from "@/components/SubscriptionGuard";
 import { useMovie, useMovies } from "@/hooks/useMovies";
 import { Star, Clock, Calendar, User, Images, ArrowRight } from "lucide-react";
 
-const MovieDetail = () => {
+const MovieDetailInner = () => {
   const { id } = useParams();
   const { data: movie, isLoading } = useMovie(id);
   const { data: allMovies = [] } = useMovies();
@@ -198,6 +199,15 @@ const MovieDetail = () => {
 
       <Footer />
     </div>
+  );
+};
+
+const MovieDetail = () => {
+  const { id } = useParams();
+  return (
+    <SubscriptionGuard movieId={id}>
+      <MovieDetailInner />
+    </SubscriptionGuard>
   );
 };
 

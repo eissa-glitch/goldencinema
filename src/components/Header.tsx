@@ -40,6 +40,7 @@ const Header = () => {
     { path: "/movies", label: "الأفلام" },
     { path: "/artists", label: "الفنانون" },
     { path: "/years", label: "السنوات" },
+    { path: "/pricing", label: "الباقات" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
