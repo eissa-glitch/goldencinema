@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Film, Users, LogOut, Shield, Newspaper, FileText, Settings, Database, UserCog, CreditCard } from "lucide-react";
+import { Film, Users, LogOut, Shield, Newspaper, FileText, Settings, Database, UserCog, CreditCard, Award } from "lucide-react";
 import { toast } from "sonner";
 import AdminMovies from "@/components/admin/AdminMovies";
 import AdminArtists from "@/components/admin/AdminArtists";
