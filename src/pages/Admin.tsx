@@ -14,6 +14,7 @@ import ApiSettingsManager from "@/components/admin/ApiSettingsManager";
 import DatabaseExport from "@/components/admin/DatabaseExport";
 import MembersManager from "@/components/admin/MembersManager";
 import SubscriptionsManager from "@/components/admin/SubscriptionsManager";
+import FestivalsManager from "@/components/admin/FestivalsManager";
 
 const AUTHORIZED_EMAIL = "michaelmounir396@gmail.com";
 
