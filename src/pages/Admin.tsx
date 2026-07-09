@@ -136,6 +136,10 @@ const Admin = () => {
             <AdminArtists />
           </TabsContent>
 
+          <TabsContent value="festivals">
+            <FestivalsManager />
+          </TabsContent>
+
           <TabsContent value="members">
             <MembersManager />
           </TabsContent>
