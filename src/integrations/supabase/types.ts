@@ -126,6 +126,168 @@ export type Database = {
         }
         Relationships: []
       }
+      festival_articles: {
+        Row: {
+          content: string | null
+          created_at: string
+          festival_id: string
+          id: string
+          image_url: string | null
+          published_date: string | null
+          source: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          festival_id: string
+          id?: string
+          image_url?: string | null
+          published_date?: string | null
+          source?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          festival_id?: string
+          id?: string
+          image_url?: string | null
+          published_date?: string | null
+          source?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_articles_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festival_gallery: {
+        Row: {
+          caption: string | null
+          created_at: string
+          festival_id: string
+          id: string
+          image_url: string
+          sort_order: number | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          festival_id: string
+          id?: string
+          image_url: string
+          sort_order?: number | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          festival_id?: string
+          id?: string
+          image_url?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_gallery_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festival_videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          festival_id: string
+          id: string
+          sort_order: number | null
+          thumbnail_url: string | null
+          title: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          festival_id: string
+          id?: string
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          title: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          festival_id?: string
+          id?: string
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_videos_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festivals: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          edition: string | null
+          id: string
+          is_published: boolean
+          name: string
+          poster_url: string | null
+          sort_order: number | null
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          edition?: string | null
+          id?: string
+          is_published?: boolean
+          name: string
+          poster_url?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          edition?: string | null
+          id?: string
+          is_published?: boolean
+          name?: string
+          poster_url?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       movie_articles: {
         Row: {
           content: string | null

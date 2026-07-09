@@ -39,6 +39,7 @@ const Header = () => {
     { path: "/", label: "الرئيسية" },
     { path: "/movies", label: "الأفلام" },
     { path: "/artists", label: "الفنانون" },
+    { path: "/festivals", label: "المهرجانات" },
     { path: "/years", label: "السنوات" },
     { path: "/pricing", label: "الباقات" },
   ];

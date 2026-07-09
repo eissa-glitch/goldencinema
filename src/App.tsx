@@ -9,6 +9,8 @@ import Artists from "./pages/Artists";
 import Years from "./pages/Years";
 import MovieDetail from "./pages/MovieDetail";
 import ArtistDetail from "./pages/ArtistDetail";
+import Festivals from "./pages/Festivals";
+import FestivalDetail from "./pages/FestivalDetail";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Pricing from "./pages/Pricing";
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/years" element={<Years />} />
           <Route path="/movie/:id" element={<MovieDetail />} />
           <Route path="/artist/:id" element={<ArtistDetail />} />
+          <Route path="/festivals" element={<Festivals />} />
+          <Route path="/festival/:id" element={<FestivalDetail />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/pricing" element={<Pricing />} />

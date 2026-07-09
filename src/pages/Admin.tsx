@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Film, Users, LogOut, Shield, Newspaper, FileText, Settings, Database, UserCog, CreditCard } from "lucide-react";
+import { Film, Users, LogOut, Shield, Newspaper, FileText, Settings, Database, UserCog, CreditCard, Award } from "lucide-react";
 import { toast } from "sonner";
 import AdminMovies from "@/components/admin/AdminMovies";
 import AdminArtists from "@/components/admin/AdminArtists";
@@ -14,6 +14,7 @@ import ApiSettingsManager from "@/components/admin/ApiSettingsManager";
 import DatabaseExport from "@/components/admin/DatabaseExport";
 import MembersManager from "@/components/admin/MembersManager";
 import SubscriptionsManager from "@/components/admin/SubscriptionsManager";
+import FestivalsManager from "@/components/admin/FestivalsManager";
 
 const AUTHORIZED_EMAIL = "michaelmounir396@gmail.com";
 
@@ -88,7 +89,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl grid-cols-8">
+          <TabsList className="grid w-full max-w-6xl grid-cols-9">
             <TabsTrigger value="movies" className="flex items-center gap-2">
               <Film className="h-4 w-4" />
               الأفلام
@@ -96,6 +97,10 @@ const Admin = () => {
             <TabsTrigger value="artists" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               الفنانين
+            </TabsTrigger>
+            <TabsTrigger value="festivals" className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              المهرجانات
             </TabsTrigger>
             <TabsTrigger value="members" className="flex items-center gap-2">
               <UserCog className="h-4 w-4" />
@@ -129,6 +134,10 @@ const Admin = () => {
 
           <TabsContent value="artists">
             <AdminArtists />
+          </TabsContent>
+
+          <TabsContent value="festivals">
+            <FestivalsManager />
           </TabsContent>
 
           <TabsContent value="members">
